@@ -1,0 +1,124 @@
+{
+  "resourceType": "Bundle",
+  "id": "synth-maria-lopez",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-maria-lopez",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-maria-lopez",
+        "name": [{ "use": "official", "family": "Lopez", "given": ["Maria"] }],
+        "gender": "female",
+        "birthDate": "1974-05-22",
+        "address": [{ "city": "Chicago", "state": "IL", "postalCode": "60614" }],
+        "telecom": [
+          { "system": "phone", "value": "555-0201", "use": "home" },
+          { "system": "email", "value": "maria.lopez@example.com" }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Patient/patient-maria-lopez" }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-maria-mammogram",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-maria-mammogram",
+        "status": "final",
+        "subject": { "reference": "Patient/patient-maria-lopez" },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24606-6",
+              "display": "MG Breast Screening"
+            }
+          ],
+          "text": "Screening Mammogram"
+        },
+        "effectiveDateTime": "2026-03-10",
+        "issued": "2026-03-12T14:30:00Z",
+        "conclusion": "BI-RADS 4: Suspicious abnormality. Irregular spiculated mass identified in the upper outer quadrant of the left breast measuring 1.8 cm. Recommend diagnostic mammogram with ultrasound and consideration for biopsy.",
+        "conclusionCode": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "168750009",
+                "display": "Mammography suspicious"
+              }
+            ],
+            "text": "BI-RADS 4 - Suspicious"
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                "code": "RAD",
+                "display": "Radiology"
+              }
+            ]
+          }
+        ]
+      },
+      "request": { "method": "PUT", "url": "DiagnosticReport/dr-maria-mammogram" }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-maria-ca125",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-maria-ca125",
+        "status": "final",
+        "subject": { "reference": "Patient/patient-maria-lopez" },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "10334-1",
+              "display": "Cancer Ag 125 [Units/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "CA-125"
+        },
+        "effectiveDateTime": "2026-03-15",
+        "valueQuantity": {
+          "value": 89.5,
+          "unit": "U/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "U/mL"
+        },
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "H",
+                "display": "High"
+              }
+            ]
+          }
+        ],
+        "referenceRange": [
+          {
+            "low": { "value": 0, "unit": "U/mL" },
+            "high": { "value": 35, "unit": "U/mL" },
+            "text": "0-35 U/mL"
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Observation/obs-maria-ca125" }
+    }
+  ]
+}

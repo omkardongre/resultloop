@@ -1,0 +1,148 @@
+{
+  "resourceType": "Bundle",
+  "id": "synth-sarah-williams",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-sarah-williams",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-sarah-williams",
+        "name": [{ "use": "official", "family": "Williams", "given": ["Sarah"] }],
+        "gender": "female",
+        "birthDate": "1981-08-15",
+        "address": [{ "city": "Boston", "state": "MA", "postalCode": "02101" }],
+        "telecom": [
+          { "system": "phone", "value": "555-0403", "use": "home" }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Patient/patient-sarah-williams" }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-sarah-tsh",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-sarah-tsh",
+        "status": "final",
+        "subject": { "reference": "Patient/patient-sarah-williams" },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "3016-3",
+              "display": "Thyrotropin [Units/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "TSH"
+        },
+        "effectiveDateTime": "2026-03-01",
+        "valueQuantity": {
+          "value": 15.2,
+          "unit": "mIU/L",
+          "system": "http://unitsofmeasure.org",
+          "code": "mIU/L"
+        },
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "H",
+                "display": "High"
+              }
+            ]
+          }
+        ],
+        "referenceRange": [
+          {
+            "low": { "value": 0.4, "unit": "mIU/L" },
+            "high": { "value": 4.0, "unit": "mIU/L" },
+            "text": "0.4-4.0 mIU/L"
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Observation/obs-sarah-tsh" }
+    },
+    {
+      "fullUrl": "urn:uuid:sr-sarah-endocrine",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "sr-sarah-endocrine",
+        "status": "active",
+        "intent": "order",
+        "subject": { "reference": "Patient/patient-sarah-williams" },
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "306353006",
+              "display": "Referral to endocrinologist"
+            }
+          ],
+          "text": "Endocrinology Referral for Hypothyroidism"
+        },
+        "authoredOn": "2026-03-05",
+        "reasonReference": [
+          { "reference": "Observation/obs-sarah-tsh" }
+        ],
+        "note": [
+          { "text": "Elevated TSH. Refer to endocrinology for evaluation and management." }
+        ]
+      },
+      "request": { "method": "PUT", "url": "ServiceRequest/sr-sarah-endocrine" }
+    },
+    {
+      "fullUrl": "urn:uuid:task-sarah-followup",
+      "resource": {
+        "resourceType": "Task",
+        "id": "task-sarah-followup",
+        "status": "completed",
+        "intent": "order",
+        "description": "Schedule endocrinology appointment for elevated TSH follow-up",
+        "for": { "reference": "Patient/patient-sarah-williams" },
+        "authoredOn": "2026-03-05",
+        "lastModified": "2026-03-08",
+        "note": [
+          { "text": "Patient contacted. Endocrinology appointment scheduled for March 20, 2026." }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Task/task-sarah-followup" }
+    },
+    {
+      "fullUrl": "urn:uuid:comm-sarah-notification",
+      "resource": {
+        "resourceType": "Communication",
+        "id": "comm-sarah-notification",
+        "status": "completed",
+        "subject": { "reference": "Patient/patient-sarah-williams" },
+        "sent": "2026-03-06T10:00:00Z",
+        "payload": [
+          {
+            "contentString": "Patient notified of elevated TSH result and endocrinology referral via phone call. Patient acknowledged and confirmed appointment."
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/communication-category",
+                "code": "notification"
+              }
+            ]
+          }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Communication/comm-sarah-notification" }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "resourceType": "Bundle",
+  "id": "synth-robert-johnson",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-robert-johnson",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-robert-johnson",
+        "name": [{ "use": "official", "family": "Johnson", "given": ["Robert"] }],
+        "gender": "male",
+        "birthDate": "1955-02-28",
+        "address": [{ "city": "Houston", "state": "TX", "postalCode": "77001" }],
+        "telecom": [
+          { "system": "phone", "value": "555-0504", "use": "home" }
+        ]
+      },
+      "request": { "method": "PUT", "url": "Patient/patient-robert-johnson" }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-robert-ct-chest",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-robert-ct-chest",
+        "status": "final",
+        "subject": { "reference": "Patient/patient-robert-johnson" },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24627-2",
+              "display": "CT Chest"
+            }
+          ],
+          "text": "CT Chest with Contrast"
+        },
+        "effectiveDateTime": "2026-02-05",
+        "issued": "2026-02-06T09:15:00Z",
+        "conclusion": "Incidental finding: 12mm solid pulmonary nodule in the right lower lobe. No prior imaging for comparison. Recommend follow-up CT in 3 months per Fleischner Society guidelines. Lung-RADS 4A: Suspicious.",
+        "conclusionCode": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "427359005",
+                "display": "Solitary pulmonary nodule"
+              }
+            ],
+            "text": "Lung-RADS 4A - Suspicious pulmonary nodule"
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                "code": "RAD",
+                "display": "Radiology"
+              }
+            ]
+          }
+        ]
+      },
+      "request": { "method": "PUT", "url": "DiagnosticReport/dr-robert-ct-chest" }
+    }
+  ]
+}
