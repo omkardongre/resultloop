@@ -17,7 +17,7 @@ import { config } from "./config.js";
 import { logger } from "./util/logger.js";
 import { registerAllTools } from "./tools/index.js";
 
-const allowedHosts: string[] = [];
+const allowedHosts: string[] = ["resultloop-mcp.onrender.com"];
 
 switch (config.poEnv) {
   case "dev":
@@ -122,7 +122,7 @@ app.post("/mcp", async (req, res) => {
   }
 });
 
-app.listen(config.port, () => {
+app.listen(config.port, "0.0.0.0", () => {
   logger.info(
     { port: config.port, env: config.poEnv },
     "ResultLoop MCP server started",

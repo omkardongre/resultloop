@@ -4,27 +4,51 @@
   "type": "transaction",
   "entry": [
     {
-      "fullUrl": "urn:uuid:patient-priya-patel",
+      "fullUrl": "urn:uuid:c9458fac-7aa2-44c3-92d2-dadbeba79cee",
       "resource": {
         "resourceType": "Patient",
-        "id": "patient-priya-patel",
-        "name": [{ "use": "official", "family": "Patel", "given": ["Priya"] }],
+        "id": "c9458fac-7aa2-44c3-92d2-dadbeba79cee",
+        "name": [
+          {
+            "use": "official",
+            "family": "Patel",
+            "given": [
+              "Priya"
+            ]
+          }
+        ],
         "gender": "female",
         "birthDate": "1988-12-10",
-        "address": [{ "city": "Atlanta", "state": "GA", "postalCode": "30301" }],
+        "address": [
+          {
+            "city": "Atlanta",
+            "state": "GA",
+            "postalCode": "30301"
+          }
+        ],
         "telecom": [
-          { "system": "phone", "value": "555-0605", "use": "home" }
+          {
+            "system": "phone",
+            "value": "555-0605",
+            "use": "home"
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "Patient/patient-priya-patel" }
+      "request": {
+        "method": "POST",
+        "url": "Patient",
+        "ifNoneExist": "identifier=https://resultloop.dev|patient-priya-patel"
+      }
     },
     {
-      "fullUrl": "urn:uuid:obs-priya-wbc",
+      "fullUrl": "urn:uuid:5d10a1a8-dc10-44c0-9ceb-09305ef48f52",
       "resource": {
         "resourceType": "Observation",
-        "id": "obs-priya-wbc",
+        "id": "5d10a1a8-dc10-44c0-9ceb-09305ef48f52",
         "status": "final",
-        "subject": { "reference": "Patient/patient-priya-patel" },
+        "subject": {
+          "reference": "urn:uuid:c9458fac-7aa2-44c3-92d2-dadbeba79cee"
+        },
         "code": {
           "coding": [
             {
@@ -55,8 +79,14 @@
         ],
         "referenceRange": [
           {
-            "low": { "value": 4.5, "unit": "10*3/uL" },
-            "high": { "value": 11.0, "unit": "10*3/uL" },
+            "low": {
+              "value": 4.5,
+              "unit": "10*3/uL"
+            },
+            "high": {
+              "value": 11.0,
+              "unit": "10*3/uL"
+            },
             "text": "4.5-11.0 10*3/uL"
           }
         ],
@@ -71,15 +101,21 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "Observation/obs-priya-wbc" }
+      "request": {
+        "method": "POST",
+        "url": "Observation",
+        "ifNoneExist": "identifier=https://resultloop.dev|obs-priya-wbc"
+      }
     },
     {
-      "fullUrl": "urn:uuid:obs-priya-hgb",
+      "fullUrl": "urn:uuid:48d6a9c4-de73-49ee-b13c-c1a315a0bf30",
       "resource": {
         "resourceType": "Observation",
-        "id": "obs-priya-hgb",
+        "id": "48d6a9c4-de73-49ee-b13c-c1a315a0bf30",
         "status": "final",
-        "subject": { "reference": "Patient/patient-priya-patel" },
+        "subject": {
+          "reference": "urn:uuid:c9458fac-7aa2-44c3-92d2-dadbeba79cee"
+        },
         "code": {
           "coding": [
             {
@@ -110,8 +146,14 @@
         ],
         "referenceRange": [
           {
-            "low": { "value": 12.0, "unit": "g/dL" },
-            "high": { "value": 16.0, "unit": "g/dL" },
+            "low": {
+              "value": 12.0,
+              "unit": "g/dL"
+            },
+            "high": {
+              "value": 16.0,
+              "unit": "g/dL"
+            },
             "text": "12.0-16.0 g/dL"
           }
         ],
@@ -126,16 +168,22 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "Observation/obs-priya-hgb" }
+      "request": {
+        "method": "POST",
+        "url": "Observation",
+        "ifNoneExist": "identifier=https://resultloop.dev|obs-priya-hgb"
+      }
     },
     {
-      "fullUrl": "urn:uuid:sr-priya-hematology",
+      "fullUrl": "urn:uuid:622048c4-f538-4983-80b6-7f9649b61949",
       "resource": {
         "resourceType": "ServiceRequest",
-        "id": "sr-priya-hematology",
+        "id": "622048c4-f538-4983-80b6-7f9649b61949",
         "status": "active",
         "intent": "order",
-        "subject": { "reference": "Patient/patient-priya-patel" },
+        "subject": {
+          "reference": "urn:uuid:c9458fac-7aa2-44c3-92d2-dadbeba79cee"
+        },
         "code": {
           "coding": [
             {
@@ -148,13 +196,21 @@
         },
         "authoredOn": "2026-03-22",
         "reasonReference": [
-          { "reference": "Observation/obs-priya-hgb" }
+          {
+            "reference": "urn:uuid:48d6a9c4-de73-49ee-b13c-c1a315a0bf30"
+          }
         ],
         "note": [
-          { "text": "Low hemoglobin. Referred for anemia workup." }
+          {
+            "text": "Low hemoglobin. Referred for anemia workup."
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "ServiceRequest/sr-priya-hematology" }
+      "request": {
+        "method": "POST",
+        "url": "ServiceRequest",
+        "ifNoneExist": "identifier=https://resultloop.dev|sr-priya-hematology"
+      }
     }
   ]
 }

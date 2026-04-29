@@ -4,27 +4,51 @@
   "type": "transaction",
   "entry": [
     {
-      "fullUrl": "urn:uuid:patient-sarah-williams",
+      "fullUrl": "urn:uuid:558242a2-7c32-4756-b523-a7fe0fa38c47",
       "resource": {
         "resourceType": "Patient",
-        "id": "patient-sarah-williams",
-        "name": [{ "use": "official", "family": "Williams", "given": ["Sarah"] }],
+        "id": "558242a2-7c32-4756-b523-a7fe0fa38c47",
+        "name": [
+          {
+            "use": "official",
+            "family": "Williams",
+            "given": [
+              "Sarah"
+            ]
+          }
+        ],
         "gender": "female",
         "birthDate": "1981-08-15",
-        "address": [{ "city": "Boston", "state": "MA", "postalCode": "02101" }],
+        "address": [
+          {
+            "city": "Boston",
+            "state": "MA",
+            "postalCode": "02101"
+          }
+        ],
         "telecom": [
-          { "system": "phone", "value": "555-0403", "use": "home" }
+          {
+            "system": "phone",
+            "value": "555-0403",
+            "use": "home"
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "Patient/patient-sarah-williams" }
+      "request": {
+        "method": "POST",
+        "url": "Patient",
+        "ifNoneExist": "identifier=https://resultloop.dev|patient-sarah-williams"
+      }
     },
     {
-      "fullUrl": "urn:uuid:obs-sarah-tsh",
+      "fullUrl": "urn:uuid:7fd5a71c-cf57-4604-9a0a-f1d69ef0e2b9",
       "resource": {
         "resourceType": "Observation",
-        "id": "obs-sarah-tsh",
+        "id": "7fd5a71c-cf57-4604-9a0a-f1d69ef0e2b9",
         "status": "final",
-        "subject": { "reference": "Patient/patient-sarah-williams" },
+        "subject": {
+          "reference": "urn:uuid:558242a2-7c32-4756-b523-a7fe0fa38c47"
+        },
         "code": {
           "coding": [
             {
@@ -55,8 +79,14 @@
         ],
         "referenceRange": [
           {
-            "low": { "value": 0.4, "unit": "mIU/L" },
-            "high": { "value": 4.0, "unit": "mIU/L" },
+            "low": {
+              "value": 0.4,
+              "unit": "mIU/L"
+            },
+            "high": {
+              "value": 4.0,
+              "unit": "mIU/L"
+            },
             "text": "0.4-4.0 mIU/L"
           }
         ],
@@ -71,16 +101,22 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "Observation/obs-sarah-tsh" }
+      "request": {
+        "method": "POST",
+        "url": "Observation",
+        "ifNoneExist": "identifier=https://resultloop.dev|obs-sarah-tsh"
+      }
     },
     {
-      "fullUrl": "urn:uuid:sr-sarah-endocrine",
+      "fullUrl": "urn:uuid:21914d90-51d2-42e4-b8bc-b36d20216edd",
       "resource": {
         "resourceType": "ServiceRequest",
-        "id": "sr-sarah-endocrine",
+        "id": "21914d90-51d2-42e4-b8bc-b36d20216edd",
         "status": "active",
         "intent": "order",
-        "subject": { "reference": "Patient/patient-sarah-williams" },
+        "subject": {
+          "reference": "urn:uuid:558242a2-7c32-4756-b523-a7fe0fa38c47"
+        },
         "code": {
           "coding": [
             {
@@ -93,38 +129,56 @@
         },
         "authoredOn": "2026-03-05",
         "reasonReference": [
-          { "reference": "Observation/obs-sarah-tsh" }
+          {
+            "reference": "7fd5a71c-cf57-4604-9a0a-f1d69ef0e2b9"
+          }
         ],
         "note": [
-          { "text": "Elevated TSH. Refer to endocrinology for evaluation and management." }
+          {
+            "text": "Elevated TSH. Refer to endocrinology for evaluation and management."
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "ServiceRequest/sr-sarah-endocrine" }
+      "request": {
+        "method": "POST",
+        "url": "ServiceRequest",
+        "ifNoneExist": "identifier=https://resultloop.dev|sr-sarah-endocrine"
+      }
     },
     {
-      "fullUrl": "urn:uuid:task-sarah-followup",
+      "fullUrl": "urn:uuid:e68c606c-0e7d-48ba-b1fa-87fcda3c7843",
       "resource": {
         "resourceType": "Task",
-        "id": "task-sarah-followup",
+        "id": "e68c606c-0e7d-48ba-b1fa-87fcda3c7843",
         "status": "completed",
         "intent": "order",
         "description": "Schedule endocrinology appointment for elevated TSH follow-up",
-        "for": { "reference": "Patient/patient-sarah-williams" },
+        "for": {
+          "reference": "urn:uuid:558242a2-7c32-4756-b523-a7fe0fa38c47"
+        },
         "authoredOn": "2026-03-05",
         "lastModified": "2026-03-08",
         "note": [
-          { "text": "Patient contacted. Endocrinology appointment scheduled for March 20, 2026." }
+          {
+            "text": "Patient contacted. Endocrinology appointment scheduled for March 20, 2026."
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "Task/task-sarah-followup" }
+      "request": {
+        "method": "POST",
+        "url": "Task",
+        "ifNoneExist": "identifier=https://resultloop.dev|task-sarah-followup"
+      }
     },
     {
-      "fullUrl": "urn:uuid:comm-sarah-notification",
+      "fullUrl": "urn:uuid:13bae26a-f465-4d42-8324-8edc6283ecb1",
       "resource": {
         "resourceType": "Communication",
-        "id": "comm-sarah-notification",
+        "id": "13bae26a-f465-4d42-8324-8edc6283ecb1",
         "status": "completed",
-        "subject": { "reference": "Patient/patient-sarah-williams" },
+        "subject": {
+          "reference": "urn:uuid:558242a2-7c32-4756-b523-a7fe0fa38c47"
+        },
         "sent": "2026-03-06T10:00:00Z",
         "payload": [
           {
@@ -142,7 +196,11 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "Communication/comm-sarah-notification" }
+      "request": {
+        "method": "POST",
+        "url": "Communication",
+        "ifNoneExist": "identifier=https://resultloop.dev|comm-sarah-notification"
+      }
     }
   ]
 }

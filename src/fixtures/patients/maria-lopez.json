@@ -4,28 +4,55 @@
   "type": "transaction",
   "entry": [
     {
-      "fullUrl": "urn:uuid:patient-maria-lopez",
+      "fullUrl": "urn:uuid:7aa45766-0a77-4403-9025-c09b94f69beb",
       "resource": {
         "resourceType": "Patient",
-        "id": "patient-maria-lopez",
-        "name": [{ "use": "official", "family": "Lopez", "given": ["Maria"] }],
+        "id": "7aa45766-0a77-4403-9025-c09b94f69beb",
+        "name": [
+          {
+            "use": "official",
+            "family": "Lopez",
+            "given": [
+              "Maria"
+            ]
+          }
+        ],
         "gender": "female",
         "birthDate": "1974-05-22",
-        "address": [{ "city": "Chicago", "state": "IL", "postalCode": "60614" }],
+        "address": [
+          {
+            "city": "Chicago",
+            "state": "IL",
+            "postalCode": "60614"
+          }
+        ],
         "telecom": [
-          { "system": "phone", "value": "555-0201", "use": "home" },
-          { "system": "email", "value": "maria.lopez@example.com" }
+          {
+            "system": "phone",
+            "value": "555-0201",
+            "use": "home"
+          },
+          {
+            "system": "email",
+            "value": "maria.lopez@example.com"
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "Patient/patient-maria-lopez" }
+      "request": {
+        "method": "POST",
+        "url": "Patient",
+        "ifNoneExist": "identifier=https://resultloop.dev|patient-maria-lopez"
+      }
     },
     {
-      "fullUrl": "urn:uuid:dr-maria-mammogram",
+      "fullUrl": "urn:uuid:e396e162-8814-4b2b-beb3-f95db499440a",
       "resource": {
         "resourceType": "DiagnosticReport",
-        "id": "dr-maria-mammogram",
+        "id": "e396e162-8814-4b2b-beb3-f95db499440a",
         "status": "final",
-        "subject": { "reference": "Patient/patient-maria-lopez" },
+        "subject": {
+          "reference": "urn:uuid:7aa45766-0a77-4403-9025-c09b94f69beb"
+        },
         "code": {
           "coding": [
             {
@@ -63,15 +90,21 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "DiagnosticReport/dr-maria-mammogram" }
+      "request": {
+        "method": "POST",
+        "url": "DiagnosticReport",
+        "ifNoneExist": "identifier=https://resultloop.dev|dr-maria-mammogram"
+      }
     },
     {
-      "fullUrl": "urn:uuid:obs-maria-ca125",
+      "fullUrl": "urn:uuid:da4fb953-390f-406d-9a5b-3d97bb8918cd",
       "resource": {
         "resourceType": "Observation",
-        "id": "obs-maria-ca125",
+        "id": "da4fb953-390f-406d-9a5b-3d97bb8918cd",
         "status": "final",
-        "subject": { "reference": "Patient/patient-maria-lopez" },
+        "subject": {
+          "reference": "urn:uuid:7aa45766-0a77-4403-9025-c09b94f69beb"
+        },
         "code": {
           "coding": [
             {
@@ -102,8 +135,14 @@
         ],
         "referenceRange": [
           {
-            "low": { "value": 0, "unit": "U/mL" },
-            "high": { "value": 35, "unit": "U/mL" },
+            "low": {
+              "value": 0,
+              "unit": "U/mL"
+            },
+            "high": {
+              "value": 35,
+              "unit": "U/mL"
+            },
             "text": "0-35 U/mL"
           }
         ],
@@ -118,7 +157,11 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "Observation/obs-maria-ca125" }
+      "request": {
+        "method": "POST",
+        "url": "Observation",
+        "ifNoneExist": "identifier=https://resultloop.dev|obs-maria-ca125"
+      }
     }
   ]
 }

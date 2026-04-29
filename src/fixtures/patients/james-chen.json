@@ -4,27 +4,51 @@
   "type": "transaction",
   "entry": [
     {
-      "fullUrl": "urn:uuid:patient-james-chen",
+      "fullUrl": "urn:uuid:5c7973e8-af42-4ee6-9635-0d37b9e0200f",
       "resource": {
         "resourceType": "Patient",
-        "id": "patient-james-chen",
-        "name": [{ "use": "official", "family": "Chen", "given": ["James"] }],
+        "id": "5c7973e8-af42-4ee6-9635-0d37b9e0200f",
+        "name": [
+          {
+            "use": "official",
+            "family": "Chen",
+            "given": [
+              "James"
+            ]
+          }
+        ],
         "gender": "male",
         "birthDate": "1958-11-03",
-        "address": [{ "city": "San Francisco", "state": "CA", "postalCode": "94102" }],
+        "address": [
+          {
+            "city": "San Francisco",
+            "state": "CA",
+            "postalCode": "94102"
+          }
+        ],
         "telecom": [
-          { "system": "phone", "value": "555-0302", "use": "home" }
+          {
+            "system": "phone",
+            "value": "555-0302",
+            "use": "home"
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "Patient/patient-james-chen" }
+      "request": {
+        "method": "POST",
+        "url": "Patient",
+        "ifNoneExist": "identifier=https://resultloop.dev|patient-james-chen"
+      }
     },
     {
-      "fullUrl": "urn:uuid:obs-james-psa",
+      "fullUrl": "urn:uuid:f393385f-17a7-4585-b179-4833eeeaa05e",
       "resource": {
         "resourceType": "Observation",
-        "id": "obs-james-psa",
+        "id": "f393385f-17a7-4585-b179-4833eeeaa05e",
         "status": "final",
-        "subject": { "reference": "Patient/patient-james-chen" },
+        "subject": {
+          "reference": "urn:uuid:5c7973e8-af42-4ee6-9635-0d37b9e0200f"
+        },
         "code": {
           "coding": [
             {
@@ -55,8 +79,14 @@
         ],
         "referenceRange": [
           {
-            "low": { "value": 0, "unit": "ng/mL" },
-            "high": { "value": 4.0, "unit": "ng/mL" },
+            "low": {
+              "value": 0,
+              "unit": "ng/mL"
+            },
+            "high": {
+              "value": 4.0,
+              "unit": "ng/mL"
+            },
             "text": "0-4.0 ng/mL"
           }
         ],
@@ -71,7 +101,11 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "Observation/obs-james-psa" }
+      "request": {
+        "method": "POST",
+        "url": "Observation",
+        "ifNoneExist": "identifier=https://resultloop.dev|obs-james-psa"
+      }
     }
   ]
 }

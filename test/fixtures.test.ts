@@ -71,15 +71,18 @@ describe("fixture validity", () => {
         resource: Record<string, unknown>;
       }>;
       const patientId = (entries[0]!.resource as { id: string }).id;
+      const patientFullUrl = (bundle["entry"] as Array<{ fullUrl: string }>)[0]!.fullUrl;
       for (let i = 1; i < entries.length; i++) {
         const resource = entries[i]!.resource;
         const subject = resource["subject"] as { reference?: string } | undefined;
         const forRef = resource["for"] as { reference?: string } | undefined;
         if (subject?.reference) {
-          expect(subject.reference).toBe(`Patient/${patientId}`);
+          const valid = subject.reference === `Patient/${patientId}` || subject.reference === patientFullUrl;
+          expect(valid).toBe(true);
         }
         if (forRef?.reference) {
-          expect(forRef.reference).toBe(`Patient/${patientId}`);
+          const valid = forRef.reference === `Patient/${patientId}` || forRef.reference === patientFullUrl;
+          expect(valid).toBe(true);
         }
       }
     }
@@ -331,8 +334,9 @@ describe("priya-patel fixture (MIXED)", () => {
     const wbc = entries.find(
       (e) =>
         e.resource["resourceType"] === "Observation" &&
-        (e.resource["id"] as string).includes("wbc"),
+        JSON.stringify(e.resource["code"]).includes("Leukocytes"),
     );
+    expect(wbc).toBeDefined();
     const interpretation = wbc!.resource["interpretation"] as Array<{
       coding: Array<{ code: string }>;
     }>;
@@ -346,8 +350,9 @@ describe("priya-patel fixture (MIXED)", () => {
     const hgb = entries.find(
       (e) =>
         e.resource["resourceType"] === "Observation" &&
-        (e.resource["id"] as string).includes("hgb"),
+        JSON.stringify(e.resource["code"]).includes("Hemoglobin"),
     );
+    expect(hgb).toBeDefined();
     const interpretation = hgb!.resource["interpretation"] as Array<{
       coding: Array<{ code: string }>;
     }>;
@@ -356,16 +361,23 @@ describe("priya-patel fixture (MIXED)", () => {
 
   it("has ServiceRequest for hematology referral (covers hemoglobin only)", () => {
     const entries = bundle["entry"] as Array<{
+      fullUrl: string;
       resource: Record<string, unknown>;
     }>;
     const sr = entries.find(
       (e) => e.resource["resourceType"] === "ServiceRequest",
     );
     expect(sr).toBeDefined();
+    const hgb = entries.find(
+      (e) =>
+        e.resource["resourceType"] === "Observation" &&
+        JSON.stringify(e.resource["code"]).includes("Hemoglobin"),
+    );
+    expect(hgb).toBeDefined();
     const reasonRef = sr!.resource["reasonReference"] as Array<{
       reference: string;
     }>;
-    expect(reasonRef[0]!.reference).toContain("hgb");
+    expect(reasonRef[0]!.reference).toBe(hgb!.fullUrl);
   });
 
   it("has NO follow-up specifically for WBC (open loop for WBC)", () => {

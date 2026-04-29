@@ -4,27 +4,51 @@
   "type": "transaction",
   "entry": [
     {
-      "fullUrl": "urn:uuid:patient-robert-johnson",
+      "fullUrl": "urn:uuid:01de9980-b55a-45de-b566-f6732777a697",
       "resource": {
         "resourceType": "Patient",
-        "id": "patient-robert-johnson",
-        "name": [{ "use": "official", "family": "Johnson", "given": ["Robert"] }],
+        "id": "01de9980-b55a-45de-b566-f6732777a697",
+        "name": [
+          {
+            "use": "official",
+            "family": "Johnson",
+            "given": [
+              "Robert"
+            ]
+          }
+        ],
         "gender": "male",
         "birthDate": "1955-02-28",
-        "address": [{ "city": "Houston", "state": "TX", "postalCode": "77001" }],
+        "address": [
+          {
+            "city": "Houston",
+            "state": "TX",
+            "postalCode": "77001"
+          }
+        ],
         "telecom": [
-          { "system": "phone", "value": "555-0504", "use": "home" }
+          {
+            "system": "phone",
+            "value": "555-0504",
+            "use": "home"
+          }
         ]
       },
-      "request": { "method": "PUT", "url": "Patient/patient-robert-johnson" }
+      "request": {
+        "method": "POST",
+        "url": "Patient",
+        "ifNoneExist": "identifier=https://resultloop.dev|patient-robert-johnson"
+      }
     },
     {
-      "fullUrl": "urn:uuid:dr-robert-ct-chest",
+      "fullUrl": "urn:uuid:bd332bdd-0b20-43d0-ae18-9118e0374b81",
       "resource": {
         "resourceType": "DiagnosticReport",
-        "id": "dr-robert-ct-chest",
+        "id": "bd332bdd-0b20-43d0-ae18-9118e0374b81",
         "status": "final",
-        "subject": { "reference": "Patient/patient-robert-johnson" },
+        "subject": {
+          "reference": "urn:uuid:01de9980-b55a-45de-b566-f6732777a697"
+        },
         "code": {
           "coding": [
             {
@@ -62,7 +86,11 @@
           }
         ]
       },
-      "request": { "method": "PUT", "url": "DiagnosticReport/dr-robert-ct-chest" }
+      "request": {
+        "method": "POST",
+        "url": "DiagnosticReport",
+        "ifNoneExist": "identifier=https://resultloop.dev|dr-robert-ct-chest"
+      }
     }
   ]
 }

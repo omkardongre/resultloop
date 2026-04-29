@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc",
+    "build": "tsc && cp -r src/fixtures/patients dist/fixtures/",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",

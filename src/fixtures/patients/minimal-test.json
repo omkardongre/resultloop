@@ -1,0 +1,15 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "name": [{ "family": "TestPatient", "given": ["ResultLoop"] }],
+        "gender": "female",
+        "birthDate": "1980-01-01"
+      },
+      "request": { "method": "POST", "url": "Patient" }
+    }
+  ]
+}
