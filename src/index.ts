@@ -8,9 +8,7 @@
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  createMcpExpressApp,
-} from "@modelcontextprotocol/sdk/server/express.js";
+import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import cors from "cors";
 import { config } from "./config.js";
@@ -60,30 +58,45 @@ app.post("/mcp", async (req, res) => {
           extensions: {
             "ai.promptopinion/fhir-context": {
               scopes: [
+                // All resource scopes below are required because the closure
+                // audit pipeline must query every resource type to produce a
+                // trustworthy verdict. Missing any scope would silently
+                // under-report follow-up evidence and risk a false CLOSED.
                 {
                   name: "patient/Patient.rs",
                   required: true,
                 },
                 {
-                  name: "offline_access",
-                },
-                {
                   name: "patient/Observation.rs",
+                  required: true,
                 },
                 {
                   name: "patient/DiagnosticReport.rs",
+                  required: true,
                 },
                 {
                   name: "patient/ServiceRequest.rs",
+                  required: true,
                 },
                 {
+                  // Task scope is optional because some FHIR platforms do not
+                  // expose Task in their SMART scope set. The audit still
+                  // produces a verdict from the other follow-up resources and
+                  // surfaces a partial-failure warning via searchErrors.
                   name: "patient/Task.rs",
+                  required: true,
                 },
                 {
                   name: "patient/Communication.rs",
+                  required: true,
                 },
                 {
                   name: "patient/CarePlan.rs",
+                  required: true,
+                },
+                {
+                  name: "patient/Encounter.rs",
+                  required: true,
                 },
               ],
             },

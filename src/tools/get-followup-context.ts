@@ -14,6 +14,7 @@ interface FollowUpEvidence {
   resourceType: string;
   found: number;
   references: string[];
+  searchError?: string;
 }
 
 /**
@@ -53,7 +54,7 @@ class GetResultFollowupContextTool implements IMcpTool {
             .string()
             .describe(
               "The date of the abnormal result in ISO format (e.g., '2026-01-15'). " +
-              "Follow-up evidence is searched AFTER this date.",
+                "Follow-up evidence is searched AFTER this date.",
             ),
         },
       },
@@ -70,6 +71,7 @@ class GetResultFollowupContextTool implements IMcpTool {
 
           const evidenceChecked: FollowUpEvidence[] = [];
           let totalFollowUpFound = 0;
+          const searchErrors: string[] = [];
 
           // Search each follow-up resource type AFTER the result date
           const resourceTypesToCheck = [
@@ -89,11 +91,16 @@ class GetResultFollowupContextTool implements IMcpTool {
             );
             evidenceChecked.push(evidence);
             totalFollowUpFound += evidence.found;
+            if (evidence.searchError) {
+              searchErrors.push(`${resourceType}: ${evidence.searchError}`);
+            }
           }
 
           const closureStatus =
             totalFollowUpFound === 0 ? "OPEN_LOOP" : "CLOSED";
           const riskLevel = totalFollowUpFound === 0 ? "HIGH" : "LOW";
+          // If any search errored, we cannot assert a clean CLOSED/OPEN_LOOP verdict.
+          const shouldAbstain = searchErrors.length > 0;
 
           const daysSinceResult = Math.floor(
             (Date.now() - new Date(resultDate).getTime()) /
@@ -114,12 +121,17 @@ class GetResultFollowupContextTool implements IMcpTool {
           return McpUtilities.createJsonResponse({
             closureStatus,
             riskLevel,
+            shouldAbstain,
             patientId,
             auditedResult: resultReference,
             resultDate,
             daysSinceResult,
             totalFollowUpEvidenceFound: totalFollowUpFound,
             evidenceChecked,
+            searchErrors: searchErrors.length > 0 ? searchErrors : undefined,
+            abstainReason: shouldAbstain
+              ? "One or more FHIR search queries failed. The closure verdict may be incomplete; a clinician should not rely solely on this report."
+              : undefined,
             summary:
               closureStatus === "OPEN_LOOP"
                 ? `OPEN LOOP DETECTED: Abnormal result (${resultReference}) from ${resultDate} ` +
@@ -158,9 +170,16 @@ class GetResultFollowupContextTool implements IMcpTool {
     try {
       // Build date parameter based on resource type
       const dateParam = this.getDateParamName(resourceType);
+      // FHIR R4 Task does not support `patient` as a standard search parameter —
+      // it must be queried via `subject=Patient/<id>`. All other resources
+      // (ServiceRequest, Communication, CarePlan, Encounter) support `patient=<id>`.
+      const patientParam =
+        resourceType === "Task"
+          ? `subject=Patient/${patientId}`
+          : `patient=${patientId}`;
 
       const bundle = await fhirClient.search(req, resourceType, [
-        `patient=${patientId}`,
+        patientParam,
         `${dateParam}=ge${afterDate}`,
         `_count=10`,
         `_sort=-${dateParam}`,
@@ -180,15 +199,17 @@ class GetResultFollowupContextTool implements IMcpTool {
         references: references.slice(0, 5), // Cap at 5 references for readability
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
       logger.warn(
-        { resourceType, error: error instanceof Error ? error.message : "Unknown" },
-        "Failed to search follow-up resource type (may not be supported)",
+        { resourceType, error: message },
+        "Failed to search follow-up resource type",
       );
 
       return {
         resourceType,
         found: 0,
         references: [],
+        searchError: message,
       };
     }
   }
