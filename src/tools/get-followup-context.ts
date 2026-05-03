@@ -4,6 +4,11 @@ import { IMcpTool } from "../tools/IMcpTool.js";
 import { z } from "zod";
 import { FhirUtilities } from "../fhir/fhir-utilities.js";
 import { fhirClient } from "../fhir/fhir-client.js";
+import {
+  buildResultContext,
+  isLinkedToResult,
+  ResultContext,
+} from "../fhir/result-linkage.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
 
@@ -14,6 +19,8 @@ interface FollowUpEvidence {
   resourceType: string;
   found: number;
   references: string[];
+  unlinkedFound: number;
+  unlinkedReferences: string[];
   searchError?: string;
 }
 
@@ -33,10 +40,10 @@ class GetResultFollowupContextTool implements IMcpTool {
       "get_result_followup_context",
       {
         description:
-          "Checks whether documented follow-up exists after an abnormal result. " +
+          "Checks whether documented follow-up exists for a specific abnormal result. " +
           "Searches for ServiceRequest, Task, Communication, CarePlan, and " +
           "Encounter resources created after the result date to determine if " +
-          "the clinical team acted on the abnormal finding. Returns closure " +
+          "the clinical team acted on that abnormal finding. Returns closure " +
           "status: OPEN_LOOP (no follow-up evidence) or CLOSED (follow-up found).",
         inputSchema: {
           patientId: z
@@ -72,6 +79,10 @@ class GetResultFollowupContextTool implements IMcpTool {
           const evidenceChecked: FollowUpEvidence[] = [];
           let totalFollowUpFound = 0;
           const searchErrors: string[] = [];
+          const resultContext = await this.getResultContext(
+            req,
+            resultReference,
+          );
 
           // Search each follow-up resource type AFTER the result date
           const resourceTypesToCheck = [
@@ -88,6 +99,7 @@ class GetResultFollowupContextTool implements IMcpTool {
               patientId,
               resourceType,
               resultDate,
+              resultContext,
             );
             evidenceChecked.push(evidence);
             totalFollowUpFound += evidence.found;
@@ -166,6 +178,7 @@ class GetResultFollowupContextTool implements IMcpTool {
     patientId: string,
     resourceType: string,
     afterDate: string,
+    resultContext: ResultContext,
   ): Promise<FollowUpEvidence> {
     try {
       // Build date parameter based on resource type
@@ -186,17 +199,27 @@ class GetResultFollowupContextTool implements IMcpTool {
       ]);
 
       const entries = bundle.entry || [];
-      const references = entries
-        .map((e) => {
-          const r = e.resource as unknown as Record<string, unknown>;
-          return r ? `${r["resourceType"]}/${r["id"]}` : null;
-        })
-        .filter((r): r is string => r !== null);
+      const linkedReferences: string[] = [];
+      const unlinkedReferences: string[] = [];
+
+      for (const entry of entries) {
+        const resource = entry.resource as unknown as Record<string, unknown>;
+        if (!resource) continue;
+
+        const reference = `${resource["resourceType"]}/${resource["id"]}`;
+        if (isLinkedToResult(resource, resultContext)) {
+          linkedReferences.push(reference);
+        } else {
+          unlinkedReferences.push(reference);
+        }
+      }
 
       return {
         resourceType,
-        found: references.length,
-        references: references.slice(0, 5), // Cap at 5 references for readability
+        found: linkedReferences.length,
+        references: linkedReferences.slice(0, 5), // Cap at 5 references for readability
+        unlinkedFound: unlinkedReferences.length,
+        unlinkedReferences: unlinkedReferences.slice(0, 5),
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -209,6 +232,8 @@ class GetResultFollowupContextTool implements IMcpTool {
         resourceType,
         found: 0,
         references: [],
+        unlinkedFound: 0,
+        unlinkedReferences: [],
         searchError: message,
       };
     }
@@ -232,6 +257,18 @@ class GetResultFollowupContextTool implements IMcpTool {
       default:
         return "date";
     }
+  }
+
+  private async getResultContext(
+    req: Request,
+    resultReference: string,
+  ): Promise<ResultContext> {
+    const result = await fhirClient.read<Record<string, unknown>>(
+      req,
+      resultReference,
+    );
+
+    return buildResultContext(resultReference, result);
   }
 }
 
