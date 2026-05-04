@@ -3,6 +3,7 @@ import { Request } from "express";
 import { FindRecentAbnormalResultsToolInstance } from "./find-abnormal-results.js";
 import { GetResultFollowupContextToolInstance } from "./get-followup-context.js";
 import { GenerateResultClosureSummaryToolInstance } from "./generate-closure-summary.js";
+import { RankOpenLoopsBySeverityToolInstance } from "./rank-open-loops.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -16,4 +17,5 @@ export function registerAllTools(server: McpServer, req: Request): void {
   FindRecentAbnormalResultsToolInstance.registerTool(server, req);
   GetResultFollowupContextToolInstance.registerTool(server, req);
   GenerateResultClosureSummaryToolInstance.registerTool(server, req);
+  RankOpenLoopsBySeverityToolInstance.registerTool(server, req);
 }
