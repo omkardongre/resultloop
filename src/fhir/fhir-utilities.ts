@@ -38,12 +38,23 @@ export const FhirUtilities = {
    * Extract the patient ID from the FHIR context.
    *
    * Resolution order:
-   * 1. Decode patient claim from the FHIR access token JWT
-   * 2. Fall back to the x-patient-id header
+   * 1. Use the x-patient-id header from Prompt Opinion patient scope
+   * 2. Fall back to the patient claim from the FHIR access token JWT
    *
    * This ensures we never let the LLM invent patient IDs.
    */
   getPatientIdFromContext: (req: Request): string | null => {
+    const headerPatientId =
+      req.headers[McpConstants.PatientIdHeaderName]?.toString() || null;
+
+    if (headerPatientId) {
+      logger.debug(
+        { patientId: headerPatientId },
+        "Patient ID extracted from header",
+      );
+      return headerPatientId;
+    }
+
     const fhirToken =
       req.headers[McpConstants.FhirAccessTokenHeaderName]?.toString();
 
@@ -60,17 +71,7 @@ export const FhirUtilities = {
       }
     }
 
-    const headerPatientId =
-      req.headers[McpConstants.PatientIdHeaderName]?.toString() || null;
-
-    if (headerPatientId) {
-      logger.debug(
-        { patientId: headerPatientId },
-        "Patient ID extracted from header",
-      );
-    }
-
-    return headerPatientId;
+    return null;
   },
 
   /**
@@ -90,12 +91,18 @@ export const FhirUtilities = {
   /**
    * Get patient ID or throw a descriptive error for the MCP response.
    */
-  getPatientIdOrThrow: (req: Request): string => {
+  getPatientIdOrThrow: (req: Request, suppliedPatientId?: string): string => {
     const patientId = FhirUtilities.getPatientIdFromContext(req);
     if (!patientId) {
       throw new Error(
         "Patient context is not available. Please select a patient in " +
           "Prompt Opinion before using ResultLoop tools.",
+      );
+    }
+    if (suppliedPatientId && suppliedPatientId !== patientId) {
+      logger.warn(
+        { suppliedPatientId, contextPatientId: patientId },
+        "Ignoring supplied patientId in favor of Prompt Opinion patient context",
       );
     }
     return patientId;

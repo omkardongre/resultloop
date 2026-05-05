@@ -24,11 +24,13 @@ export type AbnormalResultLike = {
 export const CLINICAL_THRESHOLD_CITATIONS = {
   birads: {
     source: "American College of Radiology BI-RADS Atlas",
-    citationUrl: "https://www.acr.org/Clinical-Resources/Reporting-and-Data-Systems/Bi-Rads",
+    citationUrl:
+      "https://www.acr.org/Clinical-Resources/Reporting-and-Data-Systems/Bi-Rads",
   },
   lungRads: {
     source: "American College of Radiology Lung-RADS Assessment Categories",
-    citationUrl: "https://www.acr.org/Clinical-Resources/Reporting-and-Data-Systems/Lung-Rads",
+    citationUrl:
+      "https://www.acr.org/Clinical-Resources/Reporting-and-Data-Systems/Lung-Rads",
   },
   diabetes: {
     source: "American Diabetes Association Standards of Care in Diabetes",
@@ -39,7 +41,8 @@ export const CLINICAL_THRESHOLD_CITATIONS = {
     citationUrl: "https://kdigo.org/guidelines/ckd-evaluation-and-management/",
   },
   thyroid: {
-    source: "American Thyroid Association patient thyroid function test guidance",
+    source:
+      "American Thyroid Association patient thyroid function test guidance",
     citationUrl: "https://www.thyroid.org/thyroid-function-tests/",
   },
   potassium: {
@@ -48,11 +51,13 @@ export const CLINICAL_THRESHOLD_CITATIONS = {
   },
   fit: {
     source: "USPSTF colorectal cancer screening recommendation",
-    citationUrl: "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/colorectal-cancer-screening",
+    citationUrl:
+      "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/colorectal-cancer-screening",
   },
   hemoglobin: {
     source: "Merck Manual anemia overview and hemoglobin thresholds",
-    citationUrl: "https://www.merckmanuals.com/professional/hematology-and-oncology/anemias/overview-of-anemia",
+    citationUrl:
+      "https://www.merckmanuals.com/professional/hematology-and-oncology/anemias/overview-of-anemia",
   },
 } as const;
 
@@ -84,10 +89,13 @@ export function classifyResultSeverity(result: AbnormalResultLike): {
   };
 }
 
-export function collectSeveritySignals(result: AbnormalResultLike): SeveritySignal[] {
+export function collectSeveritySignals(
+  result: AbnormalResultLike,
+): SeveritySignal[] {
   const text = normalizeText([
     result.code,
     result.display,
+    typeof result.value === "string" ? result.value : undefined,
     result.interpretation,
     result.unit,
   ]);
@@ -113,7 +121,8 @@ function classifyImagingSeverity(text: string): SeveritySignal[] {
       id: "bi-rads-high-suspicion",
       label: "BI-RADS 4-6 result",
       level: "HIGH",
-      rationale: "BI-RADS 4, 5, or 6 implies suspicious or known malignancy and requires documented follow-up.",
+      rationale:
+        "BI-RADS 4, 5, or 6 is a high-concern imaging category that should be flagged for clinician review if no follow-up evidence is documented.",
       ...CLINICAL_THRESHOLD_CITATIONS.birads,
     });
   }
@@ -123,7 +132,8 @@ function classifyImagingSeverity(text: string): SeveritySignal[] {
       id: "lung-rads-high-suspicion",
       label: "Lung-RADS 4 result",
       level: "HIGH",
-      rationale: "Lung-RADS category 4 findings are suspicious and require timely management or diagnostic follow-up.",
+      rationale:
+        "Lung-RADS category 4 is a high-concern imaging category that should be flagged for clinician review if no follow-up evidence is documented.",
       ...CLINICAL_THRESHOLD_CITATIONS.lungRads,
     });
   }
@@ -131,7 +141,10 @@ function classifyImagingSeverity(text: string): SeveritySignal[] {
   return signals;
 }
 
-function classifyA1cSeverity(text: string, value: number | null): SeveritySignal[] {
+function classifyA1cSeverity(
+  text: string,
+  value: number | null,
+): SeveritySignal[] {
   if (!/(a1c|hba1c|hemoglobin a1c|4548-4)/i.test(text) || value === null) {
     return [];
   }
@@ -142,7 +155,8 @@ function classifyA1cSeverity(text: string, value: number | null): SeveritySignal
         id: "a1c-poor-control",
         label: "HbA1c at or above 9%",
         level: "MODERATE",
-        rationale: "HbA1c at or above 9% is commonly used as a marker of poor glycemic control and should not be left without follow-up.",
+        rationale:
+          "HbA1c at or above 9% is a high abnormal value that should be flagged for clinician review if no follow-up evidence is documented.",
         ...CLINICAL_THRESHOLD_CITATIONS.diabetes,
       },
     ];
@@ -151,8 +165,14 @@ function classifyA1cSeverity(text: string, value: number | null): SeveritySignal
   return [];
 }
 
-function classifyEgfrSeverity(text: string, value: number | null): SeveritySignal[] {
-  if (!/(egfr|estimated glomerular filtration|62238-1|33914-3)/i.test(text) || value === null) {
+function classifyEgfrSeverity(
+  text: string,
+  value: number | null,
+): SeveritySignal[] {
+  if (
+    !/(egfr|estimated glomerular filtration|62238-1|33914-3)/i.test(text) ||
+    value === null
+  ) {
     return [];
   }
 
@@ -162,7 +182,8 @@ function classifyEgfrSeverity(text: string, value: number | null): SeveritySigna
         id: "egfr-severely-decreased",
         label: "eGFR below 30 mL/min/1.73 m2",
         level: "HIGH",
-        rationale: "eGFR below 30 is severe kidney-function reduction and should have documented clinical follow-up.",
+        rationale:
+          "eGFR below 30 is a high-concern kidney-function value that should be flagged for clinician review if no follow-up evidence is documented.",
         ...CLINICAL_THRESHOLD_CITATIONS.kidney,
       },
     ];
@@ -174,7 +195,8 @@ function classifyEgfrSeverity(text: string, value: number | null): SeveritySigna
         id: "egfr-decreased",
         label: "eGFR below 60 mL/min/1.73 m2",
         level: "MODERATE",
-        rationale: "eGFR below 60 may indicate chronic kidney disease when persistent and should be reconciled with clinical context.",
+        rationale:
+          "eGFR below 60 is an abnormal kidney-function value that should be interpreted by a clinician in patient context.",
         ...CLINICAL_THRESHOLD_CITATIONS.kidney,
       },
     ];
@@ -183,8 +205,14 @@ function classifyEgfrSeverity(text: string, value: number | null): SeveritySigna
   return [];
 }
 
-function classifyTshSeverity(text: string, value: number | null): SeveritySignal[] {
-  if (!/(tsh|thyroid stimulating hormone|3016-3)/i.test(text) || value === null) {
+function classifyTshSeverity(
+  text: string,
+  value: number | null,
+): SeveritySignal[] {
+  if (
+    !/(tsh|thyroid stimulating hormone|3016-3)/i.test(text) ||
+    value === null
+  ) {
     return [];
   }
 
@@ -194,7 +222,8 @@ function classifyTshSeverity(text: string, value: number | null): SeveritySignal
         id: "tsh-extreme",
         label: "TSH outside high-concern range",
         level: "MODERATE",
-        rationale: "Markedly low or high TSH should be reviewed in clinical context and should not be left without follow-up.",
+        rationale:
+          "Markedly low or high TSH should be flagged for clinician review if no follow-up evidence is documented.",
         ...CLINICAL_THRESHOLD_CITATIONS.thyroid,
       },
     ];
@@ -203,7 +232,10 @@ function classifyTshSeverity(text: string, value: number | null): SeveritySignal
   return [];
 }
 
-function classifyPotassiumSeverity(text: string, value: number | null): SeveritySignal[] {
+function classifyPotassiumSeverity(
+  text: string,
+  value: number | null,
+): SeveritySignal[] {
   if (!/(potassium|serum k|6298-4|2823-3)/i.test(text) || value === null) {
     return [];
   }
@@ -214,7 +246,8 @@ function classifyPotassiumSeverity(text: string, value: number | null): Severity
         id: "potassium-critical-range",
         label: "Potassium in critical range",
         level: "CRITICAL",
-        rationale: "Severe hypokalemia or hyperkalemia can be dangerous and requires clear documented response.",
+        rationale:
+          "Potassium in this range is a high-concern value that should be flagged for clinician review if no follow-up evidence is documented.",
         ...CLINICAL_THRESHOLD_CITATIONS.potassium,
       },
     ];
@@ -224,13 +257,19 @@ function classifyPotassiumSeverity(text: string, value: number | null): Severity
 }
 
 function classifyFitSeverity(text: string): SeveritySignal[] {
-  if (/(fit|fecal immunochemical|fecal occult|occult blood|2335-8|58453-2)/i.test(text) && /positive|abnormal|detected/i.test(text)) {
+  if (
+    /(fit|fecal immunochemical|fecal occult|occult blood|2335-8|58453-2)/i.test(
+      text,
+    ) &&
+    /positive|abnormal|detected/i.test(text)
+  ) {
     return [
       {
         id: "fit-positive",
         label: "Positive stool blood screening test",
         level: "HIGH",
-        rationale: "Positive colorectal cancer screening stool tests require documented diagnostic follow-up.",
+        rationale:
+          "Positive colorectal cancer screening stool tests should be flagged for clinician review if no follow-up evidence is documented.",
         ...CLINICAL_THRESHOLD_CITATIONS.fit,
       },
     ];
@@ -239,7 +278,10 @@ function classifyFitSeverity(text: string): SeveritySignal[] {
   return [];
 }
 
-function classifyHemoglobinSeverity(text: string, value: number | null): SeveritySignal[] {
+function classifyHemoglobinSeverity(
+  text: string,
+  value: number | null,
+): SeveritySignal[] {
   if (!/(hemoglobin|hgb|718-7)/i.test(text) || value === null) {
     return [];
   }
@@ -250,7 +292,8 @@ function classifyHemoglobinSeverity(text: string, value: number | null): Severit
         id: "hemoglobin-critical-low",
         label: "Hemoglobin below 8 g/dL",
         level: "HIGH",
-        rationale: "Very low hemoglobin is clinically significant and requires documented evaluation or follow-up.",
+        rationale:
+          "Very low hemoglobin is a high-concern value that should be flagged for clinician review if no follow-up evidence is documented.",
         ...CLINICAL_THRESHOLD_CITATIONS.hemoglobin,
       },
     ];

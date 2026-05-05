@@ -18,15 +18,26 @@ class DraftFollowupTaskResourceTool implements IMcpTool {
       {
         description:
           "Creates draft-only FHIR R4 Task and AuditEvent JSON for clinician review of an open-loop abnormal result. " +
+          "Use only when the user explicitly asks to draft or output FHIR Task/AuditEvent workflow artifacts. " +
+          "Do not use this tool for safety worklists, urgency checks, ranking, prioritization, or closure summaries. " +
           "This tool validates that the referenced Observation or DiagnosticReport can be fetched, computes a SHA-256 closure artifact hash, and never writes to the FHIR server.",
         inputSchema: {
+          draftIntentConfirmed: z
+            .boolean()
+            .describe(
+              "Must be true only when the user's request explicitly asks to draft, create, prepare, or output FHIR Task/AuditEvent workflow artifacts. Must be false for worklist, ranking, prioritization, or urgency-only requests.",
+            ),
           patientId: z
             .string()
-            .describe("The patient ID. Optional if patient context already exists.")
+            .describe(
+              "The patient ID. Optional; Prompt Opinion patient context is authoritative when available.",
+            )
             .optional(),
           resultReference: z
             .string()
-            .describe("FHIR reference for the abnormal result, e.g. Observation/123 or DiagnosticReport/456."),
+            .describe(
+              "FHIR reference for the abnormal result, e.g. Observation/123 or DiagnosticReport/456.",
+            ),
           resultDate: z.string().describe("Date of the abnormal result."),
           resultDisplay: z.string().describe("Human-readable result name."),
           resultValue: z
@@ -35,20 +46,27 @@ class DraftFollowupTaskResourceTool implements IMcpTool {
             .optional(),
           closureStatus: z
             .enum(["OPEN_LOOP", "CLOSED", "INSUFFICIENT_EVIDENCE"])
-            .describe("Closure status from get_result_followup_context or generate_result_closure_summary."),
+            .describe(
+              "Closure status from get_result_followup_context or generate_result_closure_summary.",
+            ),
           priority: z
             .enum(["routine", "urgent", "asap", "stat"])
             .describe("FHIR Task priority. Defaults to urgent for open loops.")
             .optional(),
           planDescription: z
             .string()
-            .describe("Plain-language clinician-review plan for the draft Task."),
+            .describe(
+              "Plain-language clinician-review plan for the draft Task.",
+            ),
           closureArtifactJson: z
             .string()
-            .describe("JSON string of the closure artifact to hash and cite in AuditEvent.entity.what."),
+            .describe(
+              "JSON string of the closure artifact to hash and cite in AuditEvent.entity.what.",
+            ),
         },
       },
       async ({
+        draftIntentConfirmed,
         patientId,
         resultReference,
         resultDate,
@@ -60,8 +78,22 @@ class DraftFollowupTaskResourceTool implements IMcpTool {
         closureArtifactJson,
       }) => {
         try {
-          if (!patientId) {
-            patientId = FhirUtilities.getPatientIdOrThrow(req);
+          patientId = FhirUtilities.getPatientIdOrThrow(req, patientId);
+
+          if (draftIntentConfirmed !== true) {
+            return McpUtilities.createJsonResponse({
+              status: "not_created",
+              errorCode: "DRAFT_INTENT_NOT_CONFIRMED",
+              message:
+                "No draft Task or AuditEvent was created because the tool call did not confirm an explicit user request for draft FHIR workflow artifacts.",
+              resultReference,
+              safetyNote:
+                "Use rank_open_loops_by_severity for worklists, urgency checks, and prioritization. Use draft_followup_task_resource only when the user explicitly asks for draft FHIR Task/AuditEvent artifacts.",
+              readOnlyInvariant: {
+                fhirWritesPerformed: false,
+                requiresHumanApproval: true,
+              },
+            });
           }
 
           const resultResource = await fhirClient.read<Record<string, unknown>>(

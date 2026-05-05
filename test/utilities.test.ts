@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { FhirUtilities } from "../src/fhir/fhir-utilities.js";
 import { McpUtilities } from "../src/util/mcp-utilities.js";
 
 describe("McpUtilities", () => {
@@ -12,7 +13,9 @@ describe("McpUtilities", () => {
     });
 
     it("creates an error response", () => {
-      const result = McpUtilities.createTextResponse("Error", { isError: true });
+      const result = McpUtilities.createTextResponse("Error", {
+        isError: true,
+      });
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toBe("Error");
     });
@@ -20,7 +23,10 @@ describe("McpUtilities", () => {
 
   describe("createJsonResponse", () => {
     it("serializes JSON data", () => {
-      const result = McpUtilities.createJsonResponse({ status: "ok", count: 3 });
+      const result = McpUtilities.createJsonResponse({
+        status: "ok",
+        count: 3,
+      });
       const parsed = JSON.parse(result.content[0]!.text);
       expect(parsed.status).toBe("ok");
       expect(parsed.count).toBe(3);
@@ -28,7 +34,10 @@ describe("McpUtilities", () => {
     });
 
     it("creates JSON error response", () => {
-      const result = McpUtilities.createJsonResponse({ error: "fail" }, { isError: true });
+      const result = McpUtilities.createJsonResponse(
+        { error: "fail" },
+        { isError: true },
+      );
       expect(result.isError).toBe(true);
     });
   });
@@ -75,7 +84,9 @@ describe("closure artifact structure", () => {
     expect(artifact.draftFollowUpTasks.length).toBeGreaterThan(0);
     expect(artifact.draftFollowUpTasks[0]!.requiresHumanApproval).toBe(true);
     expect(artifact.safetyBoundaries.requiresHumanApproval).toBe(true);
-    expect(artifact.safetyBoundaries.resultLoopDoesNot).toContain("Diagnose conditions");
+    expect(artifact.safetyBoundaries.resultLoopDoesNot).toContain(
+      "Diagnose conditions",
+    );
   });
 
   it("closed loop artifact has no draft tasks", () => {
@@ -96,5 +107,33 @@ describe("config validation", () => {
     expect(config.port).toBeTypeOf("number");
     expect(["dev", "prod", "local"]).toContain(config.poEnv);
     expect(config.logLevel).toBeTruthy();
+  });
+});
+
+describe("FHIR patient context resolution", () => {
+  it("prefers x-patient-id over a JWT patient claim", () => {
+    const req = {
+      headers: {
+        "x-patient-id": "selected-patient",
+        "x-fhir-access-token":
+          "eyJhbGciOiJub25lIn0.eyJwYXRpZW50Ijoian10LXBhdGllbnQifQ.",
+      },
+    };
+
+    expect(FhirUtilities.getPatientIdFromContext(req as never)).toBe(
+      "selected-patient",
+    );
+  });
+
+  it("ignores model-supplied patient IDs when context exists", () => {
+    const req = {
+      headers: {
+        "x-patient-id": "selected-patient",
+      },
+    };
+
+    expect(
+      FhirUtilities.getPatientIdOrThrow(req as never, "model-supplied-patient"),
+    ).toBe("selected-patient");
   });
 });

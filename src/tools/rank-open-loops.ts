@@ -1,7 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Request } from "express";
 import { z } from "zod";
-import { rankOpenLoopsBySeverity } from "../clinical/open-loop-ranking.js";
+import {
+  OpenLoopCandidate,
+  rankOpenLoopsBySeverity,
+} from "../clinical/open-loop-ranking.js";
+import { fhirClient } from "../fhir/fhir-client.js";
 import { IMcpTool } from "../tools/IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
@@ -24,7 +28,7 @@ const openLoopCandidateSchema = z.object({
 });
 
 class RankOpenLoopsBySeverityTool implements IMcpTool {
-  registerTool(server: McpServer, _req: Request) {
+  registerTool(server: McpServer, req: Request) {
     server.registerTool(
       "rank_open_loops_by_severity",
       {
@@ -40,14 +44,24 @@ class RankOpenLoopsBySeverityTool implements IMcpTool {
             ),
           asOfDate: z
             .string()
-            .describe("Optional ISO date for deterministic ranking in tests or demos.")
+            .describe(
+              "Optional ISO date for deterministic ranking in tests or demos.",
+            )
             .optional(),
         },
       },
       async ({ openLoops, asOfDate }) => {
         try {
           const parsedAsOfDate = asOfDate ? new Date(asOfDate) : new Date();
-          const ranked = rankOpenLoopsBySeverity(openLoops, parsedAsOfDate);
+          const enrichedOpenLoops = await Promise.all(
+            openLoops.map((candidate) =>
+              enrichCandidateFromFhir(req, candidate),
+            ),
+          );
+          const ranked = rankOpenLoopsBySeverity(
+            enrichedOpenLoops,
+            parsedAsOfDate,
+          );
 
           logger.info(
             {
@@ -81,3 +95,97 @@ class RankOpenLoopsBySeverityTool implements IMcpTool {
 
 export const RankOpenLoopsBySeverityToolInstance =
   new RankOpenLoopsBySeverityTool();
+
+async function enrichCandidateFromFhir(
+  req: Request,
+  candidate: OpenLoopCandidate,
+): Promise<OpenLoopCandidate> {
+  try {
+    const resource = await fhirClient.read<Record<string, unknown>>(
+      req,
+      candidate.reference,
+    );
+
+    if (!resource) {
+      return candidate;
+    }
+
+    if (resource["resourceType"] === "DiagnosticReport") {
+      return enrichDiagnosticReportCandidate(candidate, resource);
+    }
+
+    if (resource["resourceType"] === "Observation") {
+      return enrichObservationCandidate(candidate, resource);
+    }
+
+    return candidate;
+  } catch (error) {
+    logger.warn(
+      { error, reference: candidate.reference },
+      "Unable to enrich open-loop candidate from FHIR source",
+    );
+    return candidate;
+  }
+}
+
+function enrichDiagnosticReportCandidate(
+  candidate: OpenLoopCandidate,
+  resource: Record<string, unknown>,
+): OpenLoopCandidate {
+  const code = resource["code"] as
+    | { text?: string; coding?: Array<{ code?: string; display?: string }> }
+    | undefined;
+  const conclusionCode = resource["conclusionCode"] as
+    | Array<{
+        text?: string;
+        coding?: Array<{ display?: string; code?: string }>;
+      }>
+    | undefined;
+  const conclusionText = [
+    resource["conclusion"],
+    ...(conclusionCode || []).flatMap((item) => [
+      item.text,
+      ...(item.coding || []).flatMap((coding) => [coding.display, coding.code]),
+    ]),
+  ]
+    .filter(
+      (value): value is string => typeof value === "string" && value.length > 0,
+    )
+    .join(" ");
+
+  return {
+    ...candidate,
+    code: candidate.code ?? code?.coding?.[0]?.code,
+    display: candidate.display ?? code?.text ?? code?.coding?.[0]?.display,
+    interpretation: [candidate.interpretation, conclusionText]
+      .filter(Boolean)
+      .join(" "),
+  };
+}
+
+function enrichObservationCandidate(
+  candidate: OpenLoopCandidate,
+  resource: Record<string, unknown>,
+): OpenLoopCandidate {
+  const code = resource["code"] as
+    | { text?: string; coding?: Array<{ code?: string; display?: string }> }
+    | undefined;
+  const valueQuantity = resource["valueQuantity"] as
+    | { value?: number; unit?: string }
+    | undefined;
+  const interpretation = resource["interpretation"] as
+    | Array<{ coding?: Array<{ code?: string; display?: string }> }>
+    | undefined;
+
+  return {
+    ...candidate,
+    code: candidate.code ?? code?.coding?.[0]?.code,
+    display: candidate.display ?? code?.text ?? code?.coding?.[0]?.display,
+    value: candidate.value ?? valueQuantity?.value,
+    unit: candidate.unit ?? valueQuantity?.unit,
+    interpretation:
+      candidate.interpretation ??
+      interpretation?.[0]?.coding?.[0]?.display ??
+      interpretation?.[0]?.coding?.[0]?.code,
+  };
+}

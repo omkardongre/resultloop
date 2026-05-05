@@ -49,7 +49,7 @@ class GetResultFollowupContextTool implements IMcpTool {
           patientId: z
             .string()
             .describe(
-              "The patient ID. Optional if patient context already exists.",
+              "The patient ID. Optional; Prompt Opinion patient context is authoritative when available.",
             )
             .optional(),
           resultReference: z
@@ -67,9 +67,7 @@ class GetResultFollowupContextTool implements IMcpTool {
       },
       async ({ patientId, resultReference, resultDate }) => {
         try {
-          if (!patientId) {
-            patientId = FhirUtilities.getPatientIdOrThrow(req);
-          }
+          patientId = FhirUtilities.getPatientIdOrThrow(req, patientId);
 
           logger.info(
             { patientId, resultReference, resultDate },

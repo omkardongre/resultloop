@@ -32,6 +32,27 @@ describe("rankOpenLoopsBySeverity", () => {
     expect(ranked[0]?.rank).toBe(1);
   });
 
+  it("ranks imaging reports as urgent when severity text is in value", () => {
+    const ranked = rankOpenLoopsBySeverity(
+      [
+        {
+          reference: "DiagnosticReport/ct-1",
+          date: "2026-02-05",
+          display: "CT Chest with Contrast",
+          value: "12mm solid pulmonary nodule, Lung-RADS 4A: Suspicious",
+          closureStatus: "OPEN_LOOP",
+        },
+      ],
+      asOfDate,
+    );
+
+    expect(ranked[0]?.severityLevel).toBe("HIGH");
+    expect(ranked[0]?.recommendedQueue).toBe("urgent_review");
+    expect(ranked[0]?.severitySignals.map((signal) => signal.id)).toContain(
+      "lung-rads-high-suspicion",
+    );
+  });
+
   it("ranks critical potassium as immediate review", () => {
     const ranked = rankOpenLoopsBySeverity(
       [

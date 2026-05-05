@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Request } from "express";
 import { IMcpTool } from "../tools/IMcpTool.js";
 import { z } from "zod";
+import { FhirUtilities } from "../fhir/fhir-utilities.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
 
@@ -34,15 +35,15 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
         inputSchema: {
           patientId: z
             .string()
-            .describe("The patient ID."),
+            .describe(
+              "The patient ID. Prompt Opinion patient context is authoritative when available.",
+            ),
           resultReference: z
             .string()
             .describe(
               "The FHIR reference of the abnormal result (e.g., 'Observation/123').",
             ),
-          resultDate: z
-            .string()
-            .describe("The date of the abnormal result."),
+          resultDate: z.string().describe("The date of the abnormal result."),
           resultDisplay: z
             .string()
             .describe(
@@ -81,6 +82,8 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
         evidenceChecked,
       }) => {
         try {
+          patientId = FhirUtilities.getPatientIdOrThrow(req, patientId);
+
           logger.info(
             { patientId, resultReference, closureStatus },
             "Generating closure summary artifact",
@@ -134,20 +137,46 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
             closureEvidenceMatrix: {
               totalChecked: parsedEvidence.length || 5,
               totalFound: totalFollowUpFound,
-              details: parsedEvidence.length > 0
-                ? parsedEvidence.map((e) => ({
-                    resourceType: e.resourceType,
-                    evidenceFound: e.found > 0,
-                    count: e.found,
-                    references: e.references,
-                  }))
-                : [
-                    { resourceType: "ServiceRequest", evidenceFound: false, count: 0, references: [] },
-                    { resourceType: "Task", evidenceFound: false, count: 0, references: [] },
-                    { resourceType: "Communication", evidenceFound: false, count: 0, references: [] },
-                    { resourceType: "CarePlan", evidenceFound: false, count: 0, references: [] },
-                    { resourceType: "Encounter", evidenceFound: false, count: 0, references: [] },
-                  ],
+              details:
+                parsedEvidence.length > 0
+                  ? parsedEvidence.map((e) => ({
+                      resourceType: e.resourceType,
+                      evidenceFound: e.found > 0,
+                      count: e.found,
+                      references: e.references,
+                    }))
+                  : [
+                      {
+                        resourceType: "ServiceRequest",
+                        evidenceFound: false,
+                        count: 0,
+                        references: [],
+                      },
+                      {
+                        resourceType: "Task",
+                        evidenceFound: false,
+                        count: 0,
+                        references: [],
+                      },
+                      {
+                        resourceType: "Communication",
+                        evidenceFound: false,
+                        count: 0,
+                        references: [],
+                      },
+                      {
+                        resourceType: "CarePlan",
+                        evidenceFound: false,
+                        count: 0,
+                        references: [],
+                      },
+                      {
+                        resourceType: "Encounter",
+                        evidenceFound: false,
+                        count: 0,
+                        references: [],
+                      },
+                    ],
             },
 
             draftFollowUpTasks:
@@ -156,21 +185,21 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
                     {
                       taskType: "review_abnormal_result",
                       priority: "urgent",
-                      description: `Review abnormal result: ${resultDisplay} from ${resultDate}`,
+                      description: `Clinician review of abnormal result audit finding: ${resultDisplay} from ${resultDate}`,
                       assignTo: "ordering_clinician",
                       requiresHumanApproval: true,
                     },
                     {
-                      taskType: "schedule_followup",
+                      taskType: "review_followup_plan",
                       priority: "urgent",
-                      description: `Schedule appropriate follow-up for: ${resultDisplay}`,
+                      description: `Review whether a documented follow-up plan exists for: ${resultDisplay}`,
                       assignTo: "care_coordinator",
                       requiresHumanApproval: true,
                     },
                     {
-                      taskType: "patient_notification",
+                      taskType: "review_patient_communication_status",
                       priority: "high",
-                      description: `Ensure patient is aware of abnormal result and follow-up plan`,
+                      description: `Review whether patient communication is documented for: ${resultDisplay}`,
                       assignTo: "nursing_staff",
                       requiresHumanApproval: true,
                     },
@@ -185,8 +214,7 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
               impactStatement:
                 closureStatus === "OPEN_LOOP"
                   ? "This open-loop abnormal result represents a potential patient " +
-                    "safety risk. Timely follow-up can prevent delayed diagnosis " +
-                    "and improve clinical outcomes."
+                    "safety risk and should be reviewed by a clinician."
                   : "Follow-up evidence has been documented for this result.",
             },
 

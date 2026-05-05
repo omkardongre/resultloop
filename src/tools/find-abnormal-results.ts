@@ -45,7 +45,7 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
           patientId: z
             .string()
             .describe(
-              "The patient ID. Optional if patient context already exists.",
+              "The patient ID. Optional; Prompt Opinion patient context is authoritative when available.",
             )
             .optional(),
           lookbackDays: z
@@ -58,10 +58,7 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
       },
       async ({ patientId, lookbackDays }) => {
         try {
-          // Resolve patient ID from context if not provided
-          if (!patientId) {
-            patientId = FhirUtilities.getPatientIdOrThrow(req);
-          }
+          patientId = FhirUtilities.getPatientIdOrThrow(req, patientId);
 
           const days = lookbackDays ?? 90;
           const lookbackDate = new Date();
@@ -76,12 +73,12 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
           const abnormalResults: AbnormalResult[] = [];
 
           // Search Observations for abnormal interpretations
-          const obsBundle = await fhirClient.search(req, "Observation", [
-            `patient=${patientId}`,
-            `date=ge${dateFilter}`,
-            `_count=100`,
-            `_sort=-date`,
-          ]);
+          const obsBundle = await searchWithDateFallback(
+            req,
+            "Observation",
+            patientId,
+            dateFilter,
+          );
 
           if (obsBundle.entry) {
             for (const entry of obsBundle.entry) {
@@ -95,12 +92,12 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
           }
 
           // Search DiagnosticReports for abnormal conclusions
-          const drBundle = await fhirClient.search(req, "DiagnosticReport", [
-            `patient=${patientId}`,
-            `date=ge${dateFilter}`,
-            `_count=100`,
-            `_sort=-date`,
-          ]);
+          const drBundle = await searchWithDateFallback(
+            req,
+            "DiagnosticReport",
+            patientId,
+            dateFilter,
+          );
 
           if (drBundle.entry) {
             for (const entry of drBundle.entry) {
@@ -166,9 +163,7 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
             const code = coding.code?.toUpperCase();
             if (
               code &&
-              ["A", "AA", "H", "HH", "L", "LL", "HU", "LU", "CR"].includes(
-                code,
-              )
+              ["A", "AA", "H", "HH", "L", "LL", "HU", "LU", "CR"].includes(code)
             ) {
               return true;
             }
@@ -192,7 +187,8 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
       const range = referenceRange[0];
       const val = valueQuantity.value;
       if (range.low?.value !== undefined && val < range.low.value) return true;
-      if (range.high?.value !== undefined && val > range.high.value) return true;
+      if (range.high?.value !== undefined && val > range.high.value)
+        return true;
     }
 
     return false;
@@ -297,3 +293,40 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
 
 export const FindRecentAbnormalResultsToolInstance =
   new FindRecentAbnormalResultsTool();
+
+async function searchWithDateFallback(
+  req: Request,
+  resourceType: "Observation" | "DiagnosticReport",
+  patientId: string,
+  dateFilter: string,
+) {
+  const datedBundle = await fhirClient.search(req, resourceType, [
+    `patient=${patientId}`,
+    `date=ge${dateFilter}`,
+    `_count=100`,
+    `_sort=-date`,
+  ]);
+
+  if (datedBundle.entry && datedBundle.entry.length > 0) {
+    return datedBundle;
+  }
+
+  const fallbackBundle = await fhirClient.search(req, resourceType, [
+    `patient=${patientId}`,
+    `_count=100`,
+    `_sort=-date`,
+  ]);
+
+  return {
+    ...fallbackBundle,
+    entry: (fallbackBundle.entry || []).filter((entry) => {
+      const resource = entry.resource as Record<string, unknown> | undefined;
+      const date =
+        resourceType === "Observation"
+          ? resource?.["effectiveDateTime"]
+          : resource?.["effectiveDateTime"] || resource?.["issued"];
+
+      return typeof date === "string" && date.slice(0, 10) >= dateFilter;
+    }),
+  };
+}

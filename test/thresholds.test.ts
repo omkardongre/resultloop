@@ -28,6 +28,18 @@ describe("clinical severity thresholds", () => {
     );
   });
 
+  it("classifies imaging severity when PO passes report text as value", () => {
+    const result = classifyResultSeverity({
+      display: "CT Chest with Contrast",
+      value: "12mm solid pulmonary nodule, Lung-RADS 4A: Suspicious",
+    });
+
+    expect(result.level).toBe("HIGH");
+    expect(result.signals.map((signal) => signal.id)).toContain(
+      "lung-rads-high-suspicion",
+    );
+  });
+
   it("classifies HbA1c at or above 9 as moderate severity", () => {
     const result = classifyResultSeverity({
       code: "4548-4",
