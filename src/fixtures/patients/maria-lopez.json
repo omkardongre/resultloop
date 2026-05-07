@@ -8,13 +8,17 @@
       "resource": {
         "resourceType": "Patient",
         "id": "7aa45766-0a77-4403-9025-c09b94f69beb",
+        "identifier": [
+          {
+            "system": "https://resultloop.dev",
+            "value": "patient-maria-lopez"
+          }
+        ],
         "name": [
           {
             "use": "official",
             "family": "Lopez",
-            "given": [
-              "Maria"
-            ]
+            "given": ["Maria"]
           }
         ],
         "gender": "female",
@@ -45,10 +49,74 @@
       }
     },
     {
+      "fullUrl": "urn:uuid:9b1a5d3a-0c6e-4d2f-8e7a-6a2f2c9b6f11",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "9b1a5d3a-0c6e-4d2f-8e7a-6a2f2c9b6f11",
+        "identifier": [
+          {
+            "system": "https://resultloop.dev",
+            "value": "dr-maria-mammogram-2024"
+          }
+        ],
+        "status": "final",
+        "subject": {
+          "reference": "urn:uuid:7aa45766-0a77-4403-9025-c09b94f69beb"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24606-6",
+              "display": "MG Breast Screening"
+            }
+          ],
+          "text": "Screening Mammogram"
+        },
+        "effectiveDateTime": "2024-09-15",
+        "issued": "2024-09-17T10:05:00Z",
+        "conclusion": "BI-RADS 4: Suspicious finding. Asymmetric density in the upper outer quadrant of the left breast warranting additional imaging. Recommend diagnostic mammogram and targeted ultrasound.",
+        "conclusionCode": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "168750009",
+                "display": "Mammography suspicious"
+              }
+            ],
+            "text": "BI-RADS 4 - Suspicious"
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                "code": "RAD",
+                "display": "Radiology"
+              }
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "DiagnosticReport",
+        "ifNoneExist": "identifier=https://resultloop.dev|dr-maria-mammogram-2024"
+      }
+    },
+    {
       "fullUrl": "urn:uuid:e396e162-8814-4b2b-beb3-f95db499440a",
       "resource": {
         "resourceType": "DiagnosticReport",
         "id": "e396e162-8814-4b2b-beb3-f95db499440a",
+        "identifier": [
+          {
+            "system": "https://resultloop.dev",
+            "value": "dr-maria-mammogram"
+          }
+        ],
         "status": "final",
         "subject": {
           "reference": "urn:uuid:7aa45766-0a77-4403-9025-c09b94f69beb"
@@ -101,6 +169,12 @@
       "resource": {
         "resourceType": "Observation",
         "id": "da4fb953-390f-406d-9a5b-3d97bb8918cd",
+        "identifier": [
+          {
+            "system": "https://resultloop.dev",
+            "value": "obs-maria-ca125"
+          }
+        ],
         "status": "final",
         "subject": {
           "reference": "urn:uuid:7aa45766-0a77-4403-9025-c09b94f69beb"

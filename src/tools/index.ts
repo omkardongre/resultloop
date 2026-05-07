@@ -6,6 +6,7 @@ import { GenerateResultClosureSummaryToolInstance } from "./generate-closure-sum
 import { RankOpenLoopsBySeverityToolInstance } from "./rank-open-loops.js";
 import { DraftFollowupTaskResourceToolInstance } from "./draft-followup-task.js";
 import { VerifyClosureClaimToolInstance } from "./verify-closure-claim.js";
+import { GetPatientLoopHistoryToolInstance } from "./get-patient-loop-history.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -14,6 +15,10 @@ import { VerifyClosureClaimToolInstance } from "./verify-closure-claim.js";
  * 1. find_recent_abnormal_results    → Scan for abnormal findings
  * 2. get_result_followup_context     → Check if follow-up exists
  * 3. generate_result_closure_summary → Create audit artifact
+ * 4. rank_open_loops_by_severity     → Prioritize for clinician review
+ * 5. draft_followup_task_resource    → Build draft FHIR Task + AuditEvent
+ * 6. verify_closure_claim            → Audit a closure claim deterministically
+ * 7. get_patient_loop_history        → Detect longitudinal closure-failure patterns
  */
 export function registerAllTools(server: McpServer, req: Request): void {
   FindRecentAbnormalResultsToolInstance.registerTool(server, req);
@@ -22,4 +27,5 @@ export function registerAllTools(server: McpServer, req: Request): void {
   RankOpenLoopsBySeverityToolInstance.registerTool(server, req);
   DraftFollowupTaskResourceToolInstance.registerTool(server, req);
   VerifyClosureClaimToolInstance.registerTool(server, req);
+  GetPatientLoopHistoryToolInstance.registerTool(server, req);
 }
