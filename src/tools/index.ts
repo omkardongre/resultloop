@@ -7,6 +7,7 @@ import { RankOpenLoopsBySeverityToolInstance } from "./rank-open-loops.js";
 import { DraftFollowupTaskResourceToolInstance } from "./draft-followup-task.js";
 import { VerifyClosureClaimToolInstance } from "./verify-closure-claim.js";
 import { GetPatientLoopHistoryToolInstance } from "./get-patient-loop-history.js";
+import { DraftOutreachMessageToolInstance } from "./draft-outreach-message.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -27,5 +28,6 @@ export function registerAllTools(server: McpServer, req: Request): void {
   RankOpenLoopsBySeverityToolInstance.registerTool(server, req);
   DraftFollowupTaskResourceToolInstance.registerTool(server, req);
   VerifyClosureClaimToolInstance.registerTool(server, req);
+  DraftOutreachMessageToolInstance.registerTool(server, req);
   GetPatientLoopHistoryToolInstance.registerTool(server, req);
 }
