@@ -29,3 +29,6 @@ coverage/
 # Temp
 tmp/
 .tmp/
+
+# Local test artifacts
+resultloop-eval-tests.csv

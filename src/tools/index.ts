@@ -8,6 +8,7 @@ import { DraftFollowupTaskResourceToolInstance } from "./draft-followup-task.js"
 import { VerifyClosureClaimToolInstance } from "./verify-closure-claim.js";
 import { GetPatientLoopHistoryToolInstance } from "./get-patient-loop-history.js";
 import { DraftOutreachMessageToolInstance } from "./draft-outreach-message.js";
+import { WriteFollowupTaskToolInstance } from "./write-followup-task.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -20,6 +21,8 @@ import { DraftOutreachMessageToolInstance } from "./draft-outreach-message.js";
  * 5. draft_followup_task_resource    → Build draft FHIR Task + AuditEvent
  * 6. verify_closure_claim            → Audit a closure claim deterministically
  * 7. get_patient_loop_history        → Detect longitudinal closure-failure patterns
+ * 8. draft_outreach_message          → Draft multilingual patient outreach messages
+ * 9. write_followup_task             → Write approved Task + Provenance to FHIR (only tool that POSTs)
  */
 export function registerAllTools(server: McpServer, req: Request): void {
   FindRecentAbnormalResultsToolInstance.registerTool(server, req);
@@ -30,4 +33,5 @@ export function registerAllTools(server: McpServer, req: Request): void {
   VerifyClosureClaimToolInstance.registerTool(server, req);
   DraftOutreachMessageToolInstance.registerTool(server, req);
   GetPatientLoopHistoryToolInstance.registerTool(server, req);
+  WriteFollowupTaskToolInstance.registerTool(server, req);
 }

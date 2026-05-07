@@ -54,6 +54,33 @@ class FhirClient {
     return result ?? { resourceType: "Bundle", type: "searchset", entry: [] };
   }
 
+  /**
+   * Create (POST) a new FHIR resource. Returns the created resource with server-assigned id + meta.
+   */
+  async create<T extends Record<string, unknown>>(
+    req: Request,
+    resource: T,
+  ): Promise<T> {
+    const fhirContext = FhirUtilities.getFhirContextOrThrow(req);
+    const resourceType = resource["resourceType"] as string;
+    if (!resourceType)
+      throw new Error("resource must have a resourceType field");
+
+    const result = await this.callAxios<T>(
+      {
+        method: "post",
+        url: this.buildUrl(fhirContext, resourceType),
+        data: resource,
+        headers: { "Content-Type": "application/fhir+json" },
+      },
+      req,
+    );
+
+    if (!result)
+      throw new Error(`FHIR create returned null for ${resourceType}`);
+    return result;
+  }
+
   private async callAxios<T>(
     axiosConfig: AxiosRequestConfig,
     req: Request,
@@ -62,6 +89,7 @@ class FhirClient {
 
     if (fhirContext.token) {
       axiosConfig.headers = {
+        ...axiosConfig.headers,
         Authorization: `Bearer ${fhirContext.token}`,
       };
     }
@@ -71,10 +99,7 @@ class FhirClient {
       return response.data as T;
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 404) {
-        logger.debug(
-          { url: axiosConfig.url },
-          "FHIR resource not found (404)",
-        );
+        logger.debug({ url: axiosConfig.url }, "FHIR resource not found (404)");
         return null;
       }
 
