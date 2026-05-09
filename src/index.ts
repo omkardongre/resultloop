@@ -14,6 +14,7 @@ import cors from "cors";
 import { config } from "./config.js";
 import { logger } from "./util/logger.js";
 import { registerAllTools } from "./tools/index.js";
+import { getReport } from "./tools/report-store.js";
 
 const allowedHosts: string[] = ["resultloop-mcp.onrender.com"];
 
@@ -43,6 +44,22 @@ app.get("/health", async (_req, res) => {
     version: "0.1.0",
     timestamp: new Date().toISOString(),
   });
+});
+
+// Serve generated HTML audit reports
+app.get("/report/:reportId", async (req, res) => {
+  const { reportId } = req.params;
+  const html = getReport(reportId);
+
+  if (!html) {
+    res.status(404).send(
+      "<h1>Report Not Found</h1><p>This report may have expired or the ID is invalid.</p>",
+    );
+    return;
+  }
+
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(html);
 });
 
 // MCP protocol endpoint
