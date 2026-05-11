@@ -15,10 +15,6 @@ import { config } from "./config.js";
 import { logger } from "./util/logger.js";
 import { registerAllTools } from "./tools/index.js";
 import { getReport } from "./tools/report-store.js";
-import {
-  CDS_HOOKS_DISCOVERY,
-  handlePatientViewHook,
-} from "./cds-hooks/cds-hooks-service.js";
 
 const allowedHosts: string[] = ["resultloop-mcp.onrender.com"];
 
@@ -56,30 +52,14 @@ app.get("/report/:reportId", async (req, res) => {
   const html = getReport(reportId);
 
   if (!html) {
-    res
-      .status(404)
-      .send(
-        "<h1>Report Not Found</h1><p>This report may have expired or the ID is invalid.</p>",
-      );
+    res.status(404).send(
+      "<h1>Report Not Found</h1><p>This report may have expired or the ID is invalid.</p>",
+    );
     return;
   }
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.send(html);
-});
-
-// CDS Hooks 3.0 — Discovery endpoint
-// GET /cds-services returns the service manifest per spec §4.1
-app.get("/cds-services", (_req, res) => {
-  res.json(CDS_HOOKS_DISCOVERY);
-});
-
-// CDS Hooks 3.0 — patient-view hook
-// POST /cds-services/result-loop-open-loop-detector
-// Triggered when a clinician opens any patient chart. Scans for open-loop
-// abnormal results and returns a non-interruptive warning card if found.
-app.post("/cds-services/result-loop-open-loop-detector", async (req, res) => {
-  await handlePatientViewHook(req, res);
 });
 
 // MCP protocol endpoint
