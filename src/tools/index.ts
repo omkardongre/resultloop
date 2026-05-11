@@ -13,6 +13,7 @@ import { GenerateAuditReportToolInstance } from "./generate-audit-report.js";
 import { WriteAuditReportDocumentReferenceToolInstance } from "./write-audit-report-document-reference.js";
 import { WriteDetectedIssueToolInstance } from "./write-detected-issue.js";
 import { GetClinicalGuidelineToolInstance } from "./get-clinical-guideline.js";
+import { SendSmsOutreachToolInstance } from "./send-sms-outreach.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -31,6 +32,7 @@ import { GetClinicalGuidelineToolInstance } from "./get-clinical-guideline.js";
  * 11. write_audit_report_document_reference → Store the audit report as a permanent FHIR DocumentReference in the patient chart
  * 12. write_detected_issue              → Write FHIR DetectedIssue (care gap / follow-up failure) for open-loop results
  * 13. get_clinical_guideline            → Search PubMed E-utilities for clinical guidelines and evidence citations
+ * 14. send_sms_outreach                 → Send clinician-approved patient outreach SMS via Twilio (gated by clinicianApprovalConfirmed)
  */
 export function registerAllTools(server: McpServer, req: Request): void {
   FindRecentAbnormalResultsToolInstance.registerTool(server, req);
@@ -46,4 +48,5 @@ export function registerAllTools(server: McpServer, req: Request): void {
   WriteAuditReportDocumentReferenceToolInstance.registerTool(server, req);
   WriteDetectedIssueToolInstance.registerTool(server, req);
   GetClinicalGuidelineToolInstance.registerTool(server, req);
+  SendSmsOutreachToolInstance.registerTool(server, req);
 }
