@@ -12,6 +12,7 @@ import { WriteFollowupTaskToolInstance } from "./write-followup-task.js";
 import { GenerateAuditReportToolInstance } from "./generate-audit-report.js";
 import { WriteAuditReportDocumentReferenceToolInstance } from "./write-audit-report-document-reference.js";
 import { WriteDetectedIssueToolInstance } from "./write-detected-issue.js";
+import { GetClinicalGuidelineToolInstance } from "./get-clinical-guideline.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -29,6 +30,7 @@ import { WriteDetectedIssueToolInstance } from "./write-detected-issue.js";
  * 10. generate_audit_report          → Generate visual HTML audit report with charts and severity cards
  * 11. write_audit_report_document_reference → Store the audit report as a permanent FHIR DocumentReference in the patient chart
  * 12. write_detected_issue              → Write FHIR DetectedIssue (care gap / follow-up failure) for open-loop results
+ * 13. get_clinical_guideline            → Search PubMed E-utilities for clinical guidelines and evidence citations
  */
 export function registerAllTools(server: McpServer, req: Request): void {
   FindRecentAbnormalResultsToolInstance.registerTool(server, req);
@@ -43,4 +45,5 @@ export function registerAllTools(server: McpServer, req: Request): void {
   GenerateAuditReportToolInstance.registerTool(server, req);
   WriteAuditReportDocumentReferenceToolInstance.registerTool(server, req);
   WriteDetectedIssueToolInstance.registerTool(server, req);
+  GetClinicalGuidelineToolInstance.registerTool(server, req);
 }
