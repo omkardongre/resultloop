@@ -206,11 +206,46 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
                   ]
                 : [],
 
+            evidenceProvenance: {
+              auditMethod:
+                "FHIR R4 search per resource type with strict date-windowing and result linkage",
+              linkageStrategy:
+                "reasonReference → basedOn → focus → temporal proximity",
+              dateWindow: {
+                from: resultDate,
+                to: new Date().toISOString().split("T")[0],
+              },
+              resourceTypesChecked: [
+                "ServiceRequest",
+                "Task",
+                "Communication",
+                "CarePlan",
+                "Encounter",
+              ],
+              resourceTypesWithEvidence: parsedEvidence
+                .filter((e) => e.found > 0)
+                .map((e) => e.resourceType),
+              citedEvidenceReferences: parsedEvidence
+                .flatMap((e) => e.references)
+                .filter((r) => r.length > 0),
+              overallConfidence:
+                parsedEvidence.length === 5
+                  ? "HIGH"
+                  : parsedEvidence.length > 0
+                    ? "MEDIUM"
+                    : "LOW",
+              confidenceRationale:
+                parsedEvidence.length === 5
+                  ? `All 5 FHIR resource types searched; ${totalFollowUpFound} linked evidence item(s) found within strict date window.`
+                  : "Partial evidence search; confidence reduced.",
+            },
+
             clinicalSafetyContext: {
               citation:
-                "Studies show 7.1% of abnormal test results lack documented " +
-                "follow-up, contributing to delayed diagnoses and adverse outcomes " +
-                "(Singh et al., Annals of Internal Medicine, 2014).",
+                "35.5% of pulmonary nodule patients receive no follow-up imaging (AHRQ/Brigham & Women's, 2025). " +
+                "26% of BI-RADS 3 findings have no documented closure (AHRQ Lacson, 2025). " +
+                "Follow-up failure contributes to 46% of severe/fatal diagnostic adverse events (PMC, 2025). " +
+                "Diagnostic errors cost $870 billion/year in the US (OECD, 2025).",
               impactStatement:
                 closureStatus === "OPEN_LOOP"
                   ? "This open-loop abnormal result represents a potential patient " +
