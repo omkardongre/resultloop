@@ -10,6 +10,7 @@ import { GetPatientLoopHistoryToolInstance } from "./get-patient-loop-history.js
 import { DraftOutreachMessageToolInstance } from "./draft-outreach-message.js";
 import { WriteFollowupTaskToolInstance } from "./write-followup-task.js";
 import { GenerateAuditReportToolInstance } from "./generate-audit-report.js";
+import { WriteAuditReportDocumentReferenceToolInstance } from "./write-audit-report-document-reference.js";
 
 /**
  * Register all ResultLoop MCP tools with the server.
@@ -25,6 +26,7 @@ import { GenerateAuditReportToolInstance } from "./generate-audit-report.js";
  * 8. draft_outreach_message          → Draft multilingual patient outreach messages
  * 9. write_followup_task             → Write approved Task + Provenance to FHIR (only tool that POSTs)
  * 10. generate_audit_report          → Generate visual HTML audit report with charts and severity cards
+ * 11. write_audit_report_document_reference → Store the audit report as a permanent FHIR DocumentReference in the patient chart
  */
 export function registerAllTools(server: McpServer, req: Request): void {
   FindRecentAbnormalResultsToolInstance.registerTool(server, req);
@@ -37,4 +39,5 @@ export function registerAllTools(server: McpServer, req: Request): void {
   GetPatientLoopHistoryToolInstance.registerTool(server, req);
   WriteFollowupTaskToolInstance.registerTool(server, req);
   GenerateAuditReportToolInstance.registerTool(server, req);
+  WriteAuditReportDocumentReferenceToolInstance.registerTool(server, req);
 }
