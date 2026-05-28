@@ -9,6 +9,7 @@ import { fhirClient } from "../fhir/fhir-client.js";
 import { IMcpTool } from "../tools/IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
+import { coerceJsonArray, coerceNumber } from "./schema-coercion.js";
 
 const openLoopCandidateSchema = z.object({
   resourceType: z.string().optional(),
@@ -23,8 +24,8 @@ const openLoopCandidateSchema = z.object({
   closureStatus: z
     .enum(["OPEN_LOOP", "CLOSED", "NOT_YET_OVERDUE", "INSUFFICIENT_EVIDENCE"])
     .optional(),
-  daysSinceResult: z.number().optional(),
-  totalFollowUpEvidenceFound: z.number().optional(),
+  daysSinceResult: coerceNumber.optional(),
+  totalFollowUpEvidenceFound: coerceNumber.optional(),
 });
 
 class RankOpenLoopsBySeverityTool implements IMcpTool {
@@ -37,11 +38,9 @@ class RankOpenLoopsBySeverityTool implements IMcpTool {
           "Uses source-cited thresholds for BI-RADS, Lung-RADS, HbA1c, eGFR, TSH, potassium, positive FIT, and hemoglobin. " +
           "This tool does not diagnose or order care; it prioritizes clinician review queues.",
         inputSchema: {
-          openLoops: z
-            .array(openLoopCandidateSchema)
-            .describe(
-              "Abnormal result or open-loop candidates from find_recent_abnormal_results and get_result_followup_context.",
-            ),
+          openLoops: coerceJsonArray(openLoopCandidateSchema).describe(
+            "Abnormal result or open-loop candidates from find_recent_abnormal_results and get_result_followup_context.",
+          ),
           asOfDate: z
             .string()
             .describe(

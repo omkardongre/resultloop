@@ -10,6 +10,7 @@ import { FhirUtilities } from "../fhir/fhir-utilities.js";
 import { IMcpTool } from "../tools/IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
+import { coerceBoolean } from "./schema-coercion.js";
 
 class DraftFollowupTaskResourceTool implements IMcpTool {
   registerTool(server: McpServer, req: Request) {
@@ -22,11 +23,9 @@ class DraftFollowupTaskResourceTool implements IMcpTool {
           "Do not use this tool for safety worklists, urgency checks, ranking, prioritization, or closure summaries. " +
           "This tool validates that the referenced Observation or DiagnosticReport can be fetched, computes a SHA-256 closure artifact hash, and never writes to the FHIR server.",
         inputSchema: {
-          draftIntentConfirmed: z
-            .boolean()
-            .describe(
-              "Must be true only when the user's request explicitly asks to draft, create, prepare, or output FHIR Task/AuditEvent workflow artifacts. Must be false for worklist, ranking, prioritization, or urgency-only requests.",
-            ),
+          draftIntentConfirmed: coerceBoolean.describe(
+            "Must be true only when the user's request explicitly asks to draft, create, prepare, or output FHIR Task/AuditEvent workflow artifacts. Must be false for worklist, ranking, prioritization, or urgency-only requests.",
+          ),
           patientId: z
             .string()
             .describe(

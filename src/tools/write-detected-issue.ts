@@ -7,6 +7,7 @@ import { IMcpTool } from "./IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
 import { sha256CanonicalJson } from "../clinical/draft-followup-task.js";
+import { coerceBoolean, coerceNumber } from "./schema-coercion.js";
 
 /**
  * write_detected_issue
@@ -47,12 +48,10 @@ class WriteDetectedIssueTool implements IMcpTool {
           "Only valid for OPEN_LOOP results. Requires explicit clinician approval. " +
           "Does NOT diagnose, treat, or order clinical actions.",
         inputSchema: {
-          clinicianApprovalConfirmed: z
-            .boolean()
-            .describe(
-              "Must be true. The clinician must explicitly approve writing the DetectedIssue to FHIR. " +
+          clinicianApprovalConfirmed: coerceBoolean.describe(
+            "Must be true. The clinician must explicitly approve writing the DetectedIssue to FHIR. " +
               "Never set to true without explicit clinician confirmation in the same conversation turn.",
-            ),
+          ),
           patientId: z
             .string()
             .describe(
@@ -75,8 +74,7 @@ class WriteDetectedIssueTool implements IMcpTool {
           closureStatus: z
             .enum(["OPEN_LOOP", "CLOSED", "INSUFFICIENT_EVIDENCE"])
             .describe("Closure status from generate_result_closure_summary. Must be OPEN_LOOP."),
-          criScore: z
-            .number()
+          criScore: coerceNumber
             .describe(
               "Closure Risk Index score (0–100) from rank_open_loops_by_severity.",
             )
@@ -85,8 +83,7 @@ class WriteDetectedIssueTool implements IMcpTool {
             .enum(["HIGH", "MODERATE", "LOW", "CRITICAL"])
             .describe("CRI severity tier from rank_open_loops_by_severity.")
             .optional(),
-          daysElapsed: z
-            .number()
+          daysElapsed: coerceNumber
             .describe("Number of days since the result was issued with no follow-up.")
             .optional(),
           issueDetail: z

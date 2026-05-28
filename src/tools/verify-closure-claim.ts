@@ -10,6 +10,7 @@ import { FhirUtilities } from "../fhir/fhir-utilities.js";
 import { IMcpTool } from "../tools/IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
+import { coerceBoolean } from "./schema-coercion.js";
 
 class VerifyClosureClaimTool implements IMcpTool {
   registerTool(server: McpServer, req: Request) {
@@ -39,8 +40,7 @@ class VerifyClosureClaimTool implements IMcpTool {
               "Optional JSON string returned by get_result_followup_context for the same result.",
             )
             .optional(),
-          fetchCitedReferences: z
-            .boolean()
+          fetchCitedReferences: coerceBoolean
             .describe(
               "When true, ResultLoop attempts to read cited FHIR references from the current FHIR context before verification. Defaults to true.",
             )

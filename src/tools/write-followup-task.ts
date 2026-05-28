@@ -7,6 +7,7 @@ import { IMcpTool } from "../tools/IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
 import { sha256CanonicalJson } from "../clinical/draft-followup-task.js";
+import { coerceBoolean } from "./schema-coercion.js";
 
 /**
  * write_followup_task
@@ -40,11 +41,9 @@ class WriteFollowupTaskTool implements IMcpTool {
           "Do NOT call unless the clinician has explicitly approved the write in this conversation turn. " +
           "Do NOT call for closed results, worklists, ranking, or draft-only requests — use draft_followup_task_resource instead.",
         inputSchema: {
-          clinicianApprovalConfirmed: z
-            .boolean()
-            .describe(
-              "Must be true only when the clinician has explicitly approved writing this Task to the FHIR server in this conversation. Must be false for draft-only, preview, or worklist requests.",
-            ),
+          clinicianApprovalConfirmed: coerceBoolean.describe(
+            "Must be true only when the clinician has explicitly approved writing this Task to the FHIR server in this conversation. Must be false for draft-only, preview, or worklist requests.",
+          ),
           patientId: z
             .string()
             .describe(

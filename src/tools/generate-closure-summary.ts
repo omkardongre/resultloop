@@ -5,6 +5,7 @@ import { z } from "zod";
 import { FhirUtilities } from "../fhir/fhir-utilities.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
+import { coerceNumber } from "./schema-coercion.js";
 
 /**
  * Tool 3: generate_result_closure_summary
@@ -56,12 +57,12 @@ class GenerateResultClosureSummaryTool implements IMcpTool {
           closureStatus: z
             .enum(["OPEN_LOOP", "CLOSED"])
             .describe("The closure status from follow-up context check."),
-          daysSinceResult: z
-            .number()
-            .describe("Days since the abnormal result was recorded."),
-          totalFollowUpFound: z
-            .number()
-            .describe("Total number of follow-up evidence resources found."),
+          daysSinceResult: coerceNumber.describe(
+            "Days since the abnormal result was recorded.",
+          ),
+          totalFollowUpFound: coerceNumber.describe(
+            "Total number of follow-up evidence resources found.",
+          ),
           evidenceChecked: z
             .string()
             .describe(

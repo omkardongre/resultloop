@@ -25,6 +25,7 @@ import { IMcpTool } from "../tools/IMcpTool.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
 import { config } from "../config.js";
+import { coerceBoolean } from "./schema-coercion.js";
 
 // ─── Twilio API types ─────────────────────────────────────────────────────────
 
@@ -167,16 +168,14 @@ class SendSmsOutreachTool implements IMcpTool {
               "FHIR reference of the abnormal result this outreach relates to " +
                 "(e.g. 'DiagnosticReport/cb94f0b2'). Used for audit logging only.",
             ),
-          clinicianApprovalConfirmed: z
-            .boolean()
-            .describe(
-              "MUST be true in this same conversation turn. " +
-                "Set to true ONLY when the clinician has explicitly said something like " +
-                "'yes send it', 'confirm and send', 'go ahead and send'. " +
-                "NEVER set to true based on approval from a previous message — each SMS send " +
-                "requires its own explicit same-turn approval. " +
-                "If false or absent, do not send — explain that explicit approval is required.",
-            ),
+          clinicianApprovalConfirmed: coerceBoolean.describe(
+            "MUST be true in this same conversation turn. " +
+              "Set to true ONLY when the clinician has explicitly said something like " +
+              "'yes send it', 'confirm and send', 'go ahead and send'. " +
+              "NEVER set to true based on approval from a previous message — each SMS send " +
+              "requires its own explicit same-turn approval. " +
+              "If false or absent, do not send — explain that explicit approval is required.",
+          ),
         },
       },
       async ({

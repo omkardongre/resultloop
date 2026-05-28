@@ -12,12 +12,17 @@ import {
   AuditReportData,
   AuditReportResult,
 } from "./report-template.js";
+import {
+  coerceBoolean,
+  coerceJsonArray,
+  coerceNumber,
+} from "./schema-coercion.js";
 
 const evidenceItemSchema = z.object({
   resourceType: z.string(),
-  found: z.boolean(),
-  count: z.number(),
-  references: z.array(z.string()).default([]),
+  found: coerceBoolean,
+  count: coerceNumber,
+  references: coerceJsonArray(z.string()).default([]),
 });
 
 const resultSchema = z.object({
@@ -34,9 +39,8 @@ const resultSchema = z.object({
     .string()
     .describe("Risk level: HIGH, MEDIUM, LOW")
     .default("LOW"),
-  daysSinceResult: z.number().describe("Days since the result was recorded"),
-  evidenceMatrix: z
-    .array(evidenceItemSchema)
+  daysSinceResult: coerceNumber.describe("Days since the result was recorded"),
+  evidenceMatrix: coerceJsonArray(evidenceItemSchema)
     .describe("Evidence checked per FHIR resource type")
     .default([]),
 });
@@ -44,15 +48,15 @@ const resultSchema = z.object({
 const longitudinalSchema = z
   .object({
     patternSeverity: z.string().default("LOW"),
-    closureRate: z.number().default(0),
-    totalAbnormal: z.number().default(0),
-    totalClosed: z.number().default(0),
+    closureRate: coerceNumber.default(0),
+    totalAbnormal: coerceNumber.default(0),
+    totalClosed: coerceNumber.default(0),
     repeatedTypes: z
       .array(
         z.object({
           type: z.string(),
-          count: z.number(),
-          openCount: z.number(),
+          count: coerceNumber,
+          openCount: coerceNumber,
         }),
       )
       .default([]),
@@ -84,13 +88,11 @@ class GenerateAuditReportTool implements IMcpTool {
               "Patient display name for the report header (e.g., 'Maria Lopez'). Optional.",
             )
             .optional(),
-          results: z
-            .array(resultSchema)
-            .describe(
-              "Array of audit results to include in the report. Each result should contain " +
-                "reference, display, date, value, closureStatus, riskLevel, daysSinceResult, " +
-                "and evidenceMatrix from previous tool calls.",
-            ),
+          results: coerceJsonArray(resultSchema).describe(
+            "Array of audit results to include in the report. Each result should contain " +
+              "reference, display, date, value, closureStatus, riskLevel, daysSinceResult, " +
+              "and evidenceMatrix from previous tool calls.",
+          ),
           longitudinalPattern: longitudinalSchema.describe(
             "Optional longitudinal pattern data from get_patient_loop_history.",
           ),

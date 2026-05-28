@@ -20,6 +20,7 @@ import {
   LoopHistoryRecord,
   summarizeLoopHistory,
 } from "../clinical/closure-pattern.js";
+import { coerceNumber } from "./schema-coercion.js";
 
 /**
  * Tool 9: get_patient_loop_history (F4 — Longitudinal Loop Memory)
@@ -53,8 +54,7 @@ class GetPatientLoopHistoryTool implements IMcpTool {
               "The patient ID. Optional; Prompt Opinion patient context is authoritative when available.",
             )
             .optional(),
-          historyMonths: z
-            .number()
+          historyMonths: coerceNumber
             .describe(
               "Number of months to look back for abnormal-result history. Defaults to 24.",
             )

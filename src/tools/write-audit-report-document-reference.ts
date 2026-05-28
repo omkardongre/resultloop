@@ -8,6 +8,7 @@ import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
 import { getReport } from "./report-store.js";
 import { sha256CanonicalJson } from "../clinical/draft-followup-task.js";
+import { coerceJsonArray, coerceNumber } from "./schema-coercion.js";
 
 /**
  * write_audit_report_document_reference
@@ -64,16 +65,13 @@ class WriteAuditReportDocumentReferenceTool implements IMcpTool {
             .describe(
               "Short plain-language summary of the audit, e.g. '2 open-loop abnormal results identified: BI-RADS 4 mammogram and CA-125 (89.5 U/mL)'.",
             ),
-          openLoopCount: z
-            .number()
+          openLoopCount: coerceNumber
             .describe("Number of open-loop results in the audit.")
             .default(0),
-          closedCount: z
-            .number()
+          closedCount: coerceNumber
             .describe("Number of closed results in the audit.")
             .default(0),
-          resultReferences: z
-            .array(z.string())
+          resultReferences: coerceJsonArray(z.string())
             .describe(
               "FHIR references to the audited abnormal results, e.g. ['DiagnosticReport/abc', 'Observation/xyz']. Used for chart context linkage.",
             )

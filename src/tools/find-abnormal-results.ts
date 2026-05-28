@@ -6,6 +6,7 @@ import { FhirUtilities } from "../fhir/fhir-utilities.js";
 import { fhirClient } from "../fhir/fhir-client.js";
 import { McpUtilities } from "../util/mcp-utilities.js";
 import { logger } from "../util/logger.js";
+import { coerceNumber } from "./schema-coercion.js";
 
 /**
  * Abnormal result interpretation for FHIR Observation.
@@ -48,8 +49,7 @@ class FindRecentAbnormalResultsTool implements IMcpTool {
               "The patient ID. Optional; Prompt Opinion patient context is authoritative when available.",
             )
             .optional(),
-          lookbackDays: z
-            .number()
+          lookbackDays: coerceNumber
             .describe(
               "Number of days to look back for abnormal results. Defaults to 90.",
             )
